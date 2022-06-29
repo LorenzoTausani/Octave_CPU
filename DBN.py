@@ -117,7 +117,7 @@ class DBN():
 
         # UPDATE WEIGHTS AND BIASES
         # non controllati bene quanto il codice precedente
-        self.vishidinc  = momentum * self.vishidinc  + self.epsilonw*( (posprods-negprods)/numcases - (self.weightcost * vishid))
+        self.vishidinc  = momentum * self.vishidinc  + self.epsilonw*( (posprods-negprods)/numcases - (self.weightcost * self.vishid))
         self.visbiasinc = momentum * self.visbiasinc + (self.epsilonvb/numcases)*(posvisact-negvisact)
         self.hidbiasinc = momentum * self.hidbiasinc + (self.epsilonhb/numcases)*(poshidact-neghidact)
         self.vishid     = self.vishid + self.vishidinc
