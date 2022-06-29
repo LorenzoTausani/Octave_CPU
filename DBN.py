@@ -1,36 +1,37 @@
 import torch
 import math
 import numpy as np
+import torch.nn as nn
 
-class DBN():
-        def __init__(self,
-                    layersize = [1000],
-                    maxepochs   = 10, # unsupervised learning epochs
-                    batchsize   = 125, # mini-batch size
-                    sparsity       = 1, # set to 1 to encourage sparsity on third layer
-                    spars_factor   = 0.05, # how much sparsity?
-                    epsilonw       = 0.1, # learning rate (weights)
-                    epsilonvb      = 0.1, # learning rate (visible biases)
-                    epsilonhb      = 0.1, # learning rate (hidden biases)
-                    weightcost     = 0.0002, # decay factor
-                    init_momentum  = 0.5, # initial momentum coefficient
-                    final_momentum = 0.9,
-                    device ='cuda'): # momentum coefficient
+class DBN(nn.Module):
+    def __init__(self,
+                layersize = [1000],
+                maxepochs   = 10, # unsupervised learning epochs
+                batchsize   = 125, # mini-batch size
+                sparsity       = 1, # set to 1 to encourage sparsity on third layer
+                spars_factor   = 0.05, # how much sparsity?
+                epsilonw       = 0.1, # learning rate (weights)
+                epsilonvb      = 0.1, # learning rate (visible biases)
+                epsilonhb      = 0.1, # learning rate (hidden biases)
+                weightcost     = 0.0002, # decay factor
+                init_momentum  = 0.5, # initial momentum coefficient
+                final_momentum = 0.9,
+                device ='cuda'): # momentum coefficient
 
-                    self.nlayers = len(layersize)
-                    self.rbm_layers =[] #decidi che farci
-                    self.layersize = layersize
-                    self.maxepochs   = maxepochs
-                    self.batchsize   = batchsize
-                    self.sparsity       = sparsity
-                    self.spars_factor   = spars_factor
-                    self.epsilonw       = epsilonw
-                    self.epsilonvb      = epsilonvb
-                    self.epsilonhb      = epsilonhb
-                    self.weightcost     = weightcost
-                    self.init_momentum  = init_momentum
-                    self.final_momentum = final_momentum
-                    self.DEVICE = device
+        self.nlayers = len(layersize)
+        self.rbm_layers =[] #decidi che farci
+        self.layersize = layersize
+        self.maxepochs   = maxepochs
+        self.batchsize   = batchsize
+        self.sparsity       = sparsity
+        self.spars_factor   = spars_factor
+        self.epsilonw       = epsilonw
+        self.epsilonvb      = epsilonvb
+        self.epsilonhb      = epsilonhb
+        self.weightcost     = weightcost
+        self.init_momentum  = init_momentum
+        self.final_momentum = final_momentum
+        self.DEVICE = device
 
 
 
