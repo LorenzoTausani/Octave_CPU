@@ -15,10 +15,24 @@ class DBN():
                     weightcost     = 0.0002, # decay factor
                     init_momentum  = 0.5, # initial momentum coefficient
                     final_momentum = 0.9,
-                    DEVICE='cpu'): # momentum coefficient
+                    device ='cuda'): # momentum coefficient
 
             self.nlayers = len(layersize)
-            self.rbm_layers =[]  
+            self.rbm_layers =[] #decidi che farci
+            self.layersize = layersize
+            self.maxepochs   = maxepochs
+            self.batchsize   = batchsize
+            self.sparsity       = sparsity
+            self.spars_factor   = spars_factor
+            self.epsilonw       = epsilonw
+            self.epsilonvb      = epsilonvb
+            self.epsilonhb      = epsilonhb
+            self.weightcost     = weightcost
+            self.init_momentum  = init_momentum
+            self.final_momentum = final_momentum
+            self.DEVICE = device
+
+
 
         def train(self, dataset, train_labels):
 
