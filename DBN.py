@@ -35,97 +35,97 @@ class DBN(nn.Module):
 
 
 
-        def train(self, dataset, train_labels):
+    def train(self, dataset, train_labels):
 
-            tensor_x = dataset.type(torch.FloatTensor).to(self.DEVICE) # transform to torch tensors
-            tensor_y = train_labels.type(torch.FloatTensor).to(self.DEVICE)
-            _dataset = torch.utils.data.TensorDataset(tensor_x,tensor_y) # create your datset
-            _dataloader = torch.utils.data.DataLoader(_dataset,batch_size=self.batchsize,drop_last = True) # create your dataloader
+        tensor_x = dataset.type(torch.FloatTensor).to(self.DEVICE) # transform to torch tensors
+        tensor_y = train_labels.type(torch.FloatTensor).to(self.DEVICE)
+        _dataset = torch.utils.data.TensorDataset(tensor_x,tensor_y) # create your datset
+        _dataloader = torch.utils.data.DataLoader(_dataset,batch_size=self.batchsize,drop_last = True) # create your dataloader
 
-            self.err = torch.FloatTensor(self.maxepochs,self.nlayers).to(self.DEVICE)
+        self.err = torch.FloatTensor(self.maxepochs,self.nlayers).to(self.DEVICE)
 
-            for layer in range(self.nlayers):
-                print('Training layer %d...\n', layer)
+        for layer in range(self.nlayers):
+            print('Training layer %d...\n', layer)
 
-                if layer == 0:
-                    data = dataset
-                else:
-                    data  = batchposhidprobs #da definire
+            if layer == 0:
+                data = dataset
+            else:
+                data  = batchposhidprobs #da definire
 
-                    # initialize weights and biases
-                    numhid  = self.layersize[layer]
-                    # forse da cambiare
-                    numcases = self.batchsize
-                    numdims = tensor_x.size()[1]*tensor_x.size()[2]
-                    numbatches =math.floor(tensor_x.size()[0]/self.batchsize)
+                # initialize weights and biases
+                numhid  = self.layersize[layer]
+                # forse da cambiare
+                numcases = self.batchsize
+                numdims = tensor_x.size()[1]*tensor_x.size()[2]
+                numbatches =math.floor(tensor_x.size()[0]/self.batchsize)
 
-                    self.vishid       = 0.1*torch.randn(numdims, numhid).to(self.DEVICE)
+                self.vishid       = 0.1*torch.randn(numdims, numhid).to(self.DEVICE)
 
-                    self.hidbiases    = torch.zeros(1,numhid).to(self.DEVICE)
-                    self.visbiases    = torch.zeros(1,numdims).to(self.DEVICE)
-                    self.vishidinc    = torch.zeros(numdims, numhid).to(self.DEVICE)
-                    self.hidbiasinc   = torch.zeros(1,numhid).to(self.DEVICE)
-                    self.visbiasinc   = torch.zeros(1,numdims).to(self.DEVICE)
-                    batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches).to(self.DEVICE)
+                self.hidbiases    = torch.zeros(1,numhid).to(self.DEVICE)
+                self.visbiases    = torch.zeros(1,numdims).to(self.DEVICE)
+                self.vishidinc    = torch.zeros(numdims, numhid).to(self.DEVICE)
+                self.hidbiasinc   = torch.zeros(1,numhid).to(self.DEVICE)
+                self.visbiasinc   = torch.zeros(1,numdims).to(self.DEVICE)
+                batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches).to(self.DEVICE)
 
-                    for epoch in range (self.maxepochs):
-                        errsum = 0
-                        for mb, samples in enumerate(_dataloader):
-                            data_mb = samples[0]
-                            data_mb = data_mb.view(len(data_mb) , numdims)
-                            err, poshidprobs = self.train_RBM(data_mb,numcases,epoch)
-                            errsum = errsum + err
-                            if epoch == self.maxepochs:
-                                batchposhidprobs[:, :, mb] = poshidprobs
-                            #sono arrivato qui 29/6 h 19
-                            if self.sparsity and (layer == 2):
-                                poshidact = torch.sum(poshidprobs,0)
-                                Q = poshidact/self.batchsize
-                                if torch.mean(Q) > self.spars_factor:
-                                    hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
-                        self.err[epoch, layer] = errsum; 
-          
+                for epoch in range (self.maxepochs):
+                    errsum = 0
+                    for mb, samples in enumerate(_dataloader):
+                        data_mb = samples[0]
+                        data_mb = data_mb.view(len(data_mb) , numdims)
+                        err, poshidprobs = self.train_RBM(data_mb,numcases,epoch)
+                        errsum = errsum + err
+                        if epoch == self.maxepochs:
+                            batchposhidprobs[:, :, mb] = poshidprobs
+                        #sono arrivato qui 29/6 h 19
+                        if self.sparsity and (layer == 2):
+                            poshidact = torch.sum(poshidprobs,0)
+                            Q = poshidact/self.batchsize
+                            if torch.mean(Q) > self.spars_factor:
+                                hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
+                    self.err[epoch, layer] = errsum; 
+        
 
-        def train_RBM(self,data_mb,numcases, epoch):
-            momentum = self.init_momentum
-            #START POSITIVE PHASE
-            H_act = torch.matmul(data_mb,self.vishid)
-            H_act = torch.add(H_act, self.hidbiases) #W.x + c
-            poshidprobs = torch.sigmoid(H_act)
-            posprods     = torch.matmul(torch.transpose(data_mb, 0, 1), poshidprobs)
-            poshidact    = torch.sum(poshidprobs,0)
-            posvisact    = torch.sum(data_mb,0)
-            #END OF POSITIVE PHASE
-            poshidstates = torch.bernoulli(poshidprobs)
+    def train_RBM(self,data_mb,numcases, epoch):
+        momentum = self.init_momentum
+        #START POSITIVE PHASE
+        H_act = torch.matmul(data_mb,self.vishid)
+        H_act = torch.add(H_act, self.hidbiases) #W.x + c
+        poshidprobs = torch.sigmoid(H_act)
+        posprods     = torch.matmul(torch.transpose(data_mb, 0, 1), poshidprobs)
+        poshidact    = torch.sum(poshidprobs,0)
+        posvisact    = torch.sum(data_mb,0)
+        #END OF POSITIVE PHASE
+        poshidstates = torch.bernoulli(poshidprobs)
 
-            #START NEGATIVE PHASE
-            N_act = torch.matmul(poshidstates,torch.transpose(self.vishid, 0, 1))
-            N_act = torch.add(N_act, self.visbiases) #W.x + c
-            negdata = torch.sigmoid(N_act)
-            N2_act = torch.matmul(negdata,self.vishid)
-            N2_act = torch.add(N2_act, self.hidbiases) #W.x + c
-            neghidprobs = torch.sigmoid(N2_act)
-            negprods    = torch.matmul(torch.transpose(negdata, 0, 1), neghidprobs)
-            neghidact   = torch.sum(neghidprobs,0)
-            negvisact   = torch.sum(negdata,0)
-            #END OF NEGATIVE PHASE
+        #START NEGATIVE PHASE
+        N_act = torch.matmul(poshidstates,torch.transpose(self.vishid, 0, 1))
+        N_act = torch.add(N_act, self.visbiases) #W.x + c
+        negdata = torch.sigmoid(N_act)
+        N2_act = torch.matmul(negdata,self.vishid)
+        N2_act = torch.add(N2_act, self.hidbiases) #W.x + c
+        neghidprobs = torch.sigmoid(N2_act)
+        negprods    = torch.matmul(torch.transpose(negdata, 0, 1), neghidprobs)
+        neghidact   = torch.sum(neghidprobs,0)
+        negvisact   = torch.sum(negdata,0)
+        #END OF NEGATIVE PHASE
 
-            err = math.sqrt(torch.sum(torch.sum(torch.square(data_mb - negdata),0)).item())
+        err = math.sqrt(torch.sum(torch.sum(torch.square(data_mb - negdata),0)).item())
 
-            if epoch > 5:
-                momentum = self.final_momentum
+        if epoch > 5:
+            momentum = self.final_momentum
 
-            # UPDATE WEIGHTS AND BIASES
-            # non controllati bene quanto il codice precedente
-            self.vishidinc  = momentum * self.vishidinc  + self.epsilonw*( (posprods-negprods)/numcases - (self.weightcost * vishid))
-            self.visbiasinc = momentum * self.visbiasinc + (self.epsilonvb/numcases)*(posvisact-negvisact)
-            self.hidbiasinc = momentum * self.hidbiasinc + (self.epsilonhb/numcases)*(poshidact-neghidact)
-            self.vishid     = self.vishid + self.vishidinc
-            self.visbiases  = self.visbiases + self.visbiasinc
-            self.hidbiases  = self.hidbiases + self.hidbiasinc
-            # END OF UPDATES
+        # UPDATE WEIGHTS AND BIASES
+        # non controllati bene quanto il codice precedente
+        self.vishidinc  = momentum * self.vishidinc  + self.epsilonw*( (posprods-negprods)/numcases - (self.weightcost * vishid))
+        self.visbiasinc = momentum * self.visbiasinc + (self.epsilonvb/numcases)*(posvisact-negvisact)
+        self.hidbiasinc = momentum * self.hidbiasinc + (self.epsilonhb/numcases)*(poshidact-neghidact)
+        self.vishid     = self.vishid + self.vishidinc
+        self.visbiases  = self.visbiases + self.visbiasinc
+        self.hidbiases  = self.hidbiases + self.hidbiasinc
+        # END OF UPDATES
 
-            return err, poshidprobs
+        return err, poshidprobs
 
 
 
