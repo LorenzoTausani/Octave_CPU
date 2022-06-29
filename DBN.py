@@ -1,9 +1,9 @@
 import torch
 import math
 import numpy as np
-import torch.nn as nn
 
-class DBN(nn.Module):
+
+class DBN():
     def __init__(self,
                 layersize = [1000],
                 maxepochs   = 10, # unsupervised learning epochs
