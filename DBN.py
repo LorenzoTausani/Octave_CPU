@@ -4,8 +4,8 @@ import numpy as np
 
 class DBN():
         def __init__(self,
-                    layersize = [500,500,2000],
-                    maxepochs   = 120, # unsupervised learning epochs
+                    layersize = [1000],
+                    maxepochs   = 10, # unsupervised learning epochs
                     batchsize   = 125, # mini-batch size
                     sparsity       = 1, # set to 1 to encourage sparsity on third layer
                     spars_factor   = 0.05, # how much sparsity?
@@ -44,14 +44,14 @@ class DBN():
                     numdims = tensor_x.size()[1]*tensor_x.size()[2]
                     numbatches =math.floor(tensor_x.size()[0]/self.batchsize)
 
-                    self.vishid       = 0.1*torch.randn(numdims, numhid)
+                    self.vishid       = 0.1*torch.randn(numdims, numhid).to(self.DEVICE)
 
-                    self.hidbiases    = torch.zeros(1,numhid)
-                    self.visbiases    = torch.zeros(1,numdims)
-                    self.vishidinc    = torch.zeros(numdims, numhid)
-                    self.hidbiasinc   = torch.zeros(1,numhid)
-                    self.visbiasinc   = torch.zeros(1,numdims)
-                    batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches)
+                    self.hidbiases    = torch.zeros(1,numhid).to(self.DEVICE)
+                    self.visbiases    = torch.zeros(1,numdims).to(self.DEVICE)
+                    self.vishidinc    = torch.zeros(numdims, numhid).to(self.DEVICE)
+                    self.hidbiasinc   = torch.zeros(1,numhid).to(self.DEVICE)
+                    self.visbiasinc   = torch.zeros(1,numdims).to(self.DEVICE)
+                    batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches).to(self.DEVICE)
 
                     for epoch in range (self.maxepochs):
                         errsum = 0
@@ -70,10 +70,6 @@ class DBN():
                                     hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
                         self.err[epoch, layer] = errsum; 
           
-               
-            
-
-                
 
         def train_RBM(self,data_mb,numcases, epoch):
             momentum = self.init_momentum
