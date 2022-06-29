@@ -52,38 +52,37 @@ class DBN():
             else:
                 data  = batchposhidprobs #da definire
 
-                # initialize weights and biases
-                numhid  = self.layersize[layer]
-                # forse da cambiare
-                numcases = self.batchsize
-                numdims = tensor_x.size()[1]*tensor_x.size()[2]
-                numbatches =math.floor(tensor_x.size()[0]/self.batchsize)
+            # initialize weights and biases
+            numhid  = self.layersize[layer]
+            # forse da cambiare
+            numcases = self.batchsize
+            numdims = tensor_x.size()[1]*tensor_x.size()[2]
+            numbatches =math.floor(tensor_x.size()[0]/self.batchsize)
 
-                self.vishid       = 0.1*torch.randn(numdims, numhid).to(self.DEVICE)
+            self.vishid       = 0.1*torch.randn(numdims, numhid).to(self.DEVICE)
+            self.hidbiases    = torch.zeros(1,numhid).to(self.DEVICE)
+            self.visbiases    = torch.zeros(1,numdims).to(self.DEVICE)
+            self.vishidinc    = torch.zeros(numdims, numhid).to(self.DEVICE)
+            self.hidbiasinc   = torch.zeros(1,numhid).to(self.DEVICE)
+            self.visbiasinc   = torch.zeros(1,numdims).to(self.DEVICE)
+            batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches).to(self.DEVICE)
 
-                self.hidbiases    = torch.zeros(1,numhid).to(self.DEVICE)
-                self.visbiases    = torch.zeros(1,numdims).to(self.DEVICE)
-                self.vishidinc    = torch.zeros(numdims, numhid).to(self.DEVICE)
-                self.hidbiasinc   = torch.zeros(1,numhid).to(self.DEVICE)
-                self.visbiasinc   = torch.zeros(1,numdims).to(self.DEVICE)
-                batchposhidprobs = torch.zeros(self.batchsize, numhid, numbatches).to(self.DEVICE)
-
-                for epoch in range (self.maxepochs):
-                    errsum = 0
-                    for mb, samples in enumerate(_dataloader):
-                        data_mb = samples[0]
-                        data_mb = data_mb.view(len(data_mb) , numdims)
-                        err, poshidprobs = self.train_RBM(data_mb,numcases,epoch)
-                        errsum = errsum + err
-                        if epoch == self.maxepochs:
-                            batchposhidprobs[:, :, mb] = poshidprobs
-                        #sono arrivato qui 29/6 h 19
-                        if self.sparsity and (layer == 2):
-                            poshidact = torch.sum(poshidprobs,0)
-                            Q = poshidact/self.batchsize
-                            if torch.mean(Q) > self.spars_factor:
-                                hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
-                    self.err[epoch, layer] = errsum; 
+            for epoch in range (self.maxepochs):
+                errsum = 0
+                for mb, samples in enumerate(_dataloader):
+                    data_mb = samples[0]
+                    data_mb = data_mb.view(len(data_mb) , numdims)
+                    err, poshidprobs = self.train_RBM(data_mb,numcases,epoch)
+                    errsum = errsum + err
+                    if epoch == self.maxepochs:
+                        batchposhidprobs[:, :, mb] = poshidprobs
+                    #sono arrivato qui 29/6 h 19
+                    if self.sparsity and (layer == 2):
+                        poshidact = torch.sum(poshidprobs,0)
+                        Q = poshidact/self.batchsize
+                        if torch.mean(Q) > self.spars_factor:
+                            hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
+                self.err[epoch, layer] = errsum; 
         
 
     def train_RBM(self,data_mb,numcases, epoch):
