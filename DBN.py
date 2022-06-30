@@ -1,6 +1,8 @@
 import torch
 import math
 import numpy as np
+import os
+import pickle
 
 '''
 30 06 2022
@@ -24,7 +26,8 @@ class DBN():
                 weightcost     = 0.0002, # decay factor
                 init_momentum  = 0.5, # initial momentum coefficient
                 final_momentum = 0.9,
-                device ='cuda'): # momentum coefficient
+                device ='cuda',
+                Num_classes = 10): # momentum coefficient
 
         self.nlayers = len(layersize)
         self.rbm_layers =[] #decidi che farci
@@ -40,6 +43,7 @@ class DBN():
         self.init_momentum  = init_momentum
         self.final_momentum = final_momentum
         self.DEVICE = device
+        self.Num_classes = Num_classes
 
 
 
@@ -144,7 +148,7 @@ class DBN():
 
         return err, poshidprobs
 
-    def reconstruct(self, input_data, nr_steps):
+    def reconstruct(self, input_data, nr_steps, new_test_set = 0):
         numcases = input_data.size()[0]
         vector_size = input_data.size()[1]*input_data.size()[2]
         input_data =  input_data.view(len(input_data) , vector_size)
@@ -173,11 +177,18 @@ class DBN():
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
+
+        if new_test_set == 1:
+            self.TEST_gen_hid_states = hid_states
+            self.TEST_vis_states = vis_states
+            self.TEST_gen_hid_prob = hid_states
+            self.TEST_vis_prob = vis_states
+
             #manca energia
 
         return hid_states, vis_states 
 
-    def RBM_perceptron(self, tr_patterns, tr_labels, te_patterns, te_labels, Num_classes = 10):
+    def RBM_perceptron(self, tr_patterns, tr_labels, te_patterns, te_labels):
         '''
         tr_patterns, te_patterns = training and testing data (e.g. hidden states)
         '''
@@ -189,7 +200,7 @@ class DBN():
         tr_patterns = torch.cat((torch.squeeze(tr_patterns),ONES), 1)
 
         #train with pseudo-inverse
-        L = torch.zeros(Num_classes,len(tr_patterns)).to(self.DEVICE)
+        L = torch.zeros(self.Num_classes,len(tr_patterns)).to(self.DEVICE)
         c=0
         for lbl in tr_labels:
             L[lbl,c]=1
@@ -212,10 +223,40 @@ class DBN():
             acc = max_act == te_labels
             te_accuracy = torch.mean(acc.to(torch.float32)).item()
 
+        self.Classifier_te_accuracy = te_accuracy 
+
         return tr_accuracy,te_accuracy       
 
 
+    def save_model(self):
+        #lavora con drive
 
+        try:
+            h_test_size = self.TEST_gen_hid_states.shape[0]
+            nr_steps = self.TEST_gen_hid_states.shape[2]
+        except:
+            h_test_size = 0
+            nr_steps = 0
+
+        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)
+
+        object = self
+ 
+
+        from google.colab import drive
+        drive.mount('/content/gdrive')
+
+        save_path = "/content/gdrive/My Drive/"+self.filename
+
+        try:
+            os.mkdir(save_path)
+        except:
+            print("Folder already found")
+
+        Filename = save_path +'/'+ self.filename + '.pkl'
+
+        with open(Filename, 'wb') as outp:  # Overwrites any existing file.
+            pickle.dump(object, outp, pickle.HIGHEST_PROTOCOL)
 
 
 
