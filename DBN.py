@@ -175,7 +175,44 @@ class DBN():
 
             #manca energia
 
-        return hid_states, vis_states        
+        return hid_states, vis_states 
+
+    def RBM_perceptron(self, tr_patterns, tr_labels, te_patterns, te_labels, Num_classes = 10):
+        '''
+        tr_patterns, te_patterns = training and testing data (e.g. hidden states)
+        '''
+        te_accuracy = 0
+        tr_accuracy = 0
+
+        #add biases
+        ONES = torch.ones(tr_patterns.size()[0], 1).to(self.DEVICE)
+        tr_patterns = torch.cat((torch.squeeze(tr_patterns),ONES), 1)
+
+        #train with pseudo-inverse
+        L = torch.zeros(Num_classes,len(tr_patterns)).to(self.DEVICE)
+        c=0
+        for lbl in tr_labels:
+            L[lbl,c]=1
+            c=c+1
+
+        weights = torch.transpose( torch.matmul(L, torch.linalg.pinv(torch.transpose(tr_patterns,0,1)) ), 0,1)
+
+        # training accuracy
+        pred = torch.matmul(tr_patterns,weights)
+        max_act = pred.argmax(1) #nota: r del codice originale è tr_labels in questo codice
+        acc = max_act == tr_labels
+        tr_accuracy = torch.mean(acc.to(torch.float32)).item()
+
+        if not(te_patterns.nelement() == 0):
+            # test accuracy
+            ONES = torch.ones(te_patterns.size()[0], 1).to(self.DEVICE)
+            te_patterns = torch.cat((torch.squeeze(te_patterns),ONES), 1) 
+            pred = torch.matmul(te_patterns,weights)
+            max_act = pred.argmax(1) #nota: r del codice originale è tr_labels in questo codice
+            acc = max_act == te_labels
+            te_accuracy = torch.mean(acc.to(torch.float32)).item()
+
+        return tr_accuracy,te_accuracy       
 
 
 
