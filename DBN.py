@@ -50,6 +50,16 @@ class DBN():
         _dataset = torch.utils.data.TensorDataset(tensor_x,tensor_y) # create your datset
         _dataloader = torch.utils.data.DataLoader(_dataset,batch_size=self.batchsize,drop_last = True) # create your dataloader
 
+        '''
+        The drop_last=True parameter ignores the last batch (when the number of examples in your dataset is not
+        divisible by your batch_size) while drop_last=False will make the last batch smaller than your batch_size
+        see also https://pytorch.org/docs/1.3.0/data.html#torch.utils.data.DataLoader
+
+        to check the dataloader structure
+        for batch_idx, samples in enumerate(_dataloader):
+            print(batch_idx, samples)
+        '''
+
         self.err = torch.FloatTensor(self.maxepochs,self.nlayers).to(self.DEVICE)
 
         for layer in range(self.nlayers):
@@ -134,30 +144,30 @@ class DBN():
 
         return err, poshidprobs
 
-    def reconstruct(input_data, rbm_mnist, nr_steps):
+    def reconstruct(self, input_data, nr_steps):
         numcases = input_data.size()[0]
         vector_size = input_data.size()[1]*input_data.size()[2]
         input_data =  input_data.view(len(input_data) , vector_size)
-        hid_prob = torch.zeros(numcases,rbm_mnist.layersize[0],nr_steps).to(rbm_mnist.DEVICE)
-        hid_states = torch.zeros(numcases,rbm_mnist.layersize[0],nr_steps).to(rbm_mnist.DEVICE)
+        hid_prob = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
+        hid_states = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
 
-        vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(rbm_mnist.DEVICE)
-        vis_states = torch.zeros(numcases,vector_size, nr_steps).to(rbm_mnist.DEVICE)
+        vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
+        vis_states = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
 
         for step in range(0,nr_steps):
             print(step)
             if step==0:
-                hid_activation = torch.matmul(input_data,rbm_mnist.vishid) + rbm_mnist.hidbiases
+                hid_activation = torch.matmul(input_data,self.vishid) + self.hidbiases
                 print("eccomi if")
             else:
-                hid_activation = torch.matmul(vis_states[:,:,step-1],rbm_mnist.vishid) + rbm_mnist.hidbiases
+                hid_activation = torch.matmul(vis_states[:,:,step-1],self.vishid) + self.hidbiases
                 print("eccomi else")
 
             hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
             
             hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
 
-            vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(rbm_mnist.vishid, 0, 1)) + rbm_mnist.visbiases
+            vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(self.vishid, 0, 1)) + self.visbiases
 
             vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
 
@@ -165,7 +175,7 @@ class DBN():
 
             #manca energia
 
-        return vis_states        
+        return hid_states, vis_states        
 
 
 
