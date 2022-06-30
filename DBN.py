@@ -148,7 +148,11 @@ class DBN():
 
         return err, poshidprobs
 
-    def reconstruct(self, input_data, nr_steps, new_test_set = 0):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[]):
+
+        '''
+        1 = test, 2 = training
+        '''
         numcases = input_data.size()[0]
         vector_size = input_data.size()[1]*input_data.size()[2]
         input_data =  input_data.view(len(input_data) , vector_size)
@@ -178,11 +182,19 @@ class DBN():
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
 
-        if new_test_set == 1:
+        if new_test1_train2_set == 1:
             self.TEST_gen_hid_states = hid_states
             self.TEST_vis_states = vis_states
             self.TEST_gen_hid_prob = hid_states
             self.TEST_vis_prob = vis_states
+            self.TEST_lbls = lbl_test
+        elif new_test1_train2_set == 2:
+            self.TRAIN_gen_hid_states = hid_states
+            self.TRAIN_vis_states = vis_states
+            self.TRAIN_gen_hid_prob = hid_states
+            self.TRAIN_vis_prob = vis_states
+            self.TRAIN_lbls = lbl_train        
+
 
             #manca energia
 
@@ -223,7 +235,15 @@ class DBN():
             acc = max_act == te_labels
             te_accuracy = torch.mean(acc.to(torch.float32)).item()
 
-        return tr_accuracy,te_accuracy       
+        return tr_accuracy,te_accuracy  
+
+    def stepwise_Cl_accuracy(self):
+        te_acc = []
+        for i in range(self.TEST_gen_hid_states.size()[2]):
+            tr_accuracy,te_accuracy = self.RBM_perceptron(self.TRAIN_gen_hid_states, self.TRAIN_lbls,self.TEST_gen_hid_states[:,:,i], self.TRAIN_lbls)
+            te_acc.append(te_accuracy)
+        self.Cl_TEST_step_accuracy = te_acc
+        return te_acc          
 
 
     def save_model(self):
