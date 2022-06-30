@@ -223,8 +223,6 @@ class DBN():
             acc = max_act == te_labels
             te_accuracy = torch.mean(acc.to(torch.float32)).item()
 
-        self.Classifier_te_accuracy = te_accuracy 
-
         return tr_accuracy,te_accuracy       
 
 
