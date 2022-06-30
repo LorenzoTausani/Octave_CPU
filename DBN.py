@@ -256,7 +256,12 @@ class DBN():
             h_test_size = 0
             nr_steps = 0
 
-        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)
+        try:
+            h_train_size = self.TRAIN_gen_hid_states.shape[0]
+        except:
+            h_train_size = 0
+
+        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)
 
         object = self
  
