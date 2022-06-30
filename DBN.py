@@ -2,6 +2,14 @@ import torch
 import math
 import numpy as np
 
+'''
+30 06 2022
+Questo codice replica in Pytorch il codice Octave_CPU
+il codice implementa bene una RBM monostrato. Va fatto lavoro 
+per implementare una DBN multistrato. Il nome della attuale classe 
+è perciò fuorviante
+'''
+
 
 class DBN():
     def __init__(self,
@@ -125,6 +133,39 @@ class DBN():
         # END OF UPDATES
 
         return err, poshidprobs
+
+    def reconstruct(input_data, rbm_mnist, nr_steps):
+        numcases = input_data.size()[0]
+        vector_size = input_data.size()[1]*input_data.size()[2]
+        input_data =  input_data.view(len(input_data) , vector_size)
+        hid_prob = torch.zeros(numcases,rbm_mnist.layersize[0],nr_steps).to(rbm_mnist.DEVICE)
+        hid_states = torch.zeros(numcases,rbm_mnist.layersize[0],nr_steps).to(rbm_mnist.DEVICE)
+
+        vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(rbm_mnist.DEVICE)
+        vis_states = torch.zeros(numcases,vector_size, nr_steps).to(rbm_mnist.DEVICE)
+
+        for step in range(0,nr_steps):
+            print(step)
+            if step==0:
+                hid_activation = torch.matmul(input_data,rbm_mnist.vishid) + rbm_mnist.hidbiases
+                print("eccomi if")
+            else:
+                hid_activation = torch.matmul(vis_states[:,:,step-1],rbm_mnist.vishid) + rbm_mnist.hidbiases
+                print("eccomi else")
+
+            hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+            
+            hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+
+            vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(rbm_mnist.vishid, 0, 1)) + rbm_mnist.visbiases
+
+            vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+
+            vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+
+            #manca energia
+
+        return vis_states        
 
 
 
