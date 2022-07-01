@@ -163,13 +163,12 @@ class DBN():
         vis_states = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
 
         for step in range(0,nr_steps):
-            print(step)
+            
             if step==0:
                 hid_activation = torch.matmul(input_data,self.vishid) + self.hidbiases
-                print("eccomi if")
             else:
                 hid_activation = torch.matmul(vis_states[:,:,step-1],self.vishid) + self.hidbiases
-                print("eccomi else")
+
 
             hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
             
