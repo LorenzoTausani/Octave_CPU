@@ -148,7 +148,7 @@ class DBN():
 
         return err, poshidprobs
 
-    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[]):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1):
 
         '''
         1 = test, 2 = training
@@ -170,13 +170,19 @@ class DBN():
                 hid_activation = torch.matmul(vis_states[:,:,step-1],self.vishid) + self.hidbiases
 
 
-            hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
-            
+            if temperature==1:
+                hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+            else:
+                hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
+
             hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
 
             vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(self.vishid, 0, 1)) + self.visbiases
 
-            vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+            if temperature==1:
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+            else:
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
