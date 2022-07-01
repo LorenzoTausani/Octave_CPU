@@ -240,7 +240,7 @@ class DBN():
     def stepwise_Cl_accuracy(self):
         te_acc = []
         for i in range(self.TEST_gen_hid_states.size()[2]):
-            tr_accuracy,te_accuracy = self.RBM_perceptron(self.TRAIN_gen_hid_states, self.TRAIN_lbls,self.TEST_gen_hid_states[:,:,i], self.TRAIN_lbls)
+            tr_accuracy,te_accuracy = self.RBM_perceptron(self.TRAIN_gen_hid_states, self.TRAIN_lbls,self.TEST_gen_hid_states[:,:,i], self.TEST_lbls)
             te_acc.append(te_accuracy)
         self.Cl_TEST_step_accuracy = te_acc
         return te_acc          
