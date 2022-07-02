@@ -3,6 +3,7 @@ import math
 import numpy as np
 import os
 import pickle
+import matplotlib.pyplot as plt
 
 '''
 30 06 2022
@@ -248,7 +249,88 @@ class DBN():
             tr_accuracy,te_accuracy = self.RBM_perceptron(self.TRAIN_gen_hid_states, self.TRAIN_lbls,self.TEST_gen_hid_states[:,:,i], self.TEST_lbls)
             te_acc.append(te_accuracy)
         self.Cl_TEST_step_accuracy = te_acc
-        return te_acc          
+        return te_acc    
+
+    def label_biasing(self,nr_steps,temperature=1, row_step=10):
+        '''
+        scopo di questa funzione è implementare il label biasing descritto in
+        https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00515/full
+        '''
+
+        tr_patterns = torch.squeeze(self.TRAIN_gen_hid_states)
+
+        L = torch.zeros(self.Num_classes,len(tr_patterns)).to(self.DEVICE)
+        c=0
+        for lbl in self.TRAIN_lbls:
+            L[lbl,c]=1
+            c=c+1
+
+        
+        weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
+        lbl_mat=torch.eye(10).to(self.DEVICE)
+
+        gen_hidden_act = torch.matmul(torch.transpose(weights_inv,0,1),lbl_mat)
+
+        '''
+        %domanda: passo o no attraverso la sigmoide? ( risposta: empiricamente con
+        %il passaggio in sigmoide viene male)
+        %hid_prob  = 1./(1 + exp(-gen_hidden_act')); %passo in sigmoide
+        %hid_bin = hid_prob > rand(size(hid_prob)); 
+        '''
+
+        hid_bin = torch.bernoulli(torch.transpose(gen_hidden_act,0,1))
+
+        vis_activation = torch.matmul(hid_bin,torch.transpose(self.vishid, 0, 1)) + self.visbiases
+        vis_prob  = torch.sigmoid(vis_activation)
+        vis_state = torch.bernoulli(vis_prob)
+
+        # stesso di reconstruct
+
+        rows = math.floor(nr_steps/row_step)
+
+        figure, axis = plt.subplots(rows+1, 10, figsize=(25,2.5*(1+rows)))
+
+        V = vis_state.view((10,28,28))
+
+        for lbl in range(10):
+            img = V[lbl:lbl+1].cpu()
+            _,reconstructed_imgs= self.reconstruct(img.to(DEVICE),nr_steps, temperature=temperature)
+
+            axis[0, lbl].imshow(torch.squeeze(img) , cmap = 'gray')
+            axis[0, lbl].set_title("Original number:{}".format(lbl))
+
+            axis[0, lbl].set_xticklabels([])
+            axis[0, lbl].set_yticklabels([])
+            axis[0, lbl].set_aspect('equal')
+
+            for idx,step in enumerate(range(row_step,nr_steps+1,row_step)):
+                idx = idx+1
+
+                reconstructed_img= reconstructed_imgs[:,:,step-1]
+                reconstructed_img = reconstructed_img.view((28,28)).cpu()
+
+                axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')
+                axis[idx, lbl].set_title("Rec.-step {}".format(step))
+
+                axis[idx, lbl].set_xticklabels([])
+                axis[idx, lbl].set_yticklabels([])
+                axis[idx, lbl].set_aspect('equal')
+
+
+
+            #plt.subplots_adjust(hspace=0)
+        plt.subplots_adjust(left=0.1, 
+                            bottom=0.1,  
+                            right=0.9,  
+                            top=0.9,  
+                            wspace=0.4,  
+                            hspace=0) 
+        
+        #plt.savefig("Reconstuct_plot.jpg")
+
+        plt.show() 
+
+        return vis_state          
 
 
     def save_model(self):
