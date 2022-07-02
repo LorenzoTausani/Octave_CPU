@@ -294,7 +294,7 @@ class DBN():
 
         for lbl in range(10):
             img = V[lbl:lbl+1].cpu()
-            _,reconstructed_imgs= self.reconstruct(img.to(DEVICE),nr_steps, temperature=temperature)
+            _,reconstructed_imgs= self.reconstruct(img.to(self.DEVICE),nr_steps, temperature=temperature)
 
             axis[0, lbl].imshow(torch.squeeze(img) , cmap = 'gray')
             axis[0, lbl].set_title("Original number:{}".format(lbl))
