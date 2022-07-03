@@ -149,6 +149,7 @@ class DBN():
 
         return err, poshidprobs
 
+
     def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1):
 
         '''
@@ -189,7 +190,7 @@ class DBN():
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
-            Energy_matrix[:,step]= energy_f(hid_states[:,:,step], vis_states[:,:,step])
+            Energy_matrix[:,step]= self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
 
         if new_test1_train2_set == 1:
             self.TEST_gen_hid_states = hid_states
@@ -198,7 +199,7 @@ class DBN():
             self.TEST_vis_prob = vis_states
             self.TEST_lbls = lbl_test
             self.TEST_energy_matrix = Energy_matrix
-            
+
         elif new_test1_train2_set == 2:
             self.TRAIN_gen_hid_states = hid_states
             self.TRAIN_vis_states = vis_states
@@ -208,14 +209,15 @@ class DBN():
 
         return hid_states, vis_states
 
-    def energy_f(self,hid_states, vis_states):
+    def energy_f(self, hid_states, vis_states):
+
         sum_h_v_W = torch.zeros(hid_states.size()[0],1).to(self.DEVICE)
         m1=torch.matmul(vis_states,self.vishid)
         m2 = torch.matmul(m1,torch.transpose(hid_states,0,1))
         sum_h_v_W = torch.diagonal(m2*torch.eye(m2.size()[0]).to(self.DEVICE))
         state_energy = -torch.matmul(vis_states,torch.transpose(self.visbiases,0,1)) - torch.matmul(hid_states,torch.transpose(self.hidbiases,0,1)) -sum_h_v_W.unsqueeze(1)
+        
         return state_energy
-
 
     def RBM_perceptron(self, tr_patterns, tr_labels, te_patterns, te_labels):
         '''
