@@ -150,7 +150,7 @@ class DBN():
         return err, poshidprobs
 
 
-    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1):
 
         '''
         1 = test, 2 = training
@@ -190,7 +190,8 @@ class DBN():
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
-            Energy_matrix[:,step]= self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
+            if  include_energy == 1:
+                Energy_matrix[:,step]= self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
 
         if new_test1_train2_set == 1:
             self.TEST_gen_hid_states = hid_states
