@@ -163,6 +163,8 @@ class DBN():
         vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
         vis_states = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
 
+        Energy_matrix = torch.zeros(numcases, nr_steps).to(self.DEVICE)
+
         for step in range(0,nr_steps):
             
             if step==0:
@@ -186,6 +188,18 @@ class DBN():
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            
+            #potrebbero esserci errori 03 07 22
+            sum_h_v_W = torch.zeros(self.TEST_gen_hid_states[:,:,step].size()[0]).to(self.DEVICE)
+
+            for i in range(self.TEST_vis_states[:,:,step].size()[1]):
+                for j in range(self.TEST_gen_hid_states[:,:,step].size()[1]):
+                    sum_h_v_W = sum_h_v_W + torch.mul(torch.mul(self.TEST_vis_states[:,i,step],self.TEST_gen_hid_states[:,j,step]),self.vishid[i,j])
+
+            Energy_matrix[:,step] = -torch.matmul(self.TEST_vis_states[:,:,step],torch.transpose(self.visbiases,0,1)) - torch.matmul(self.TEST_gen_hid_states[:,:,step],torch.transpose(self.hidbiases,0,1)) -sum_h_v_W
+                    
+
+
 
 
         if new_test1_train2_set == 1:
@@ -202,7 +216,7 @@ class DBN():
             self.TRAIN_lbls = lbl_train        
 
 
-            #manca energia
+        
 
         return hid_states, vis_states 
 
