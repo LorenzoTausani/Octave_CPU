@@ -189,15 +189,16 @@ class DBN():
 
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
             
-            #potrebbero esserci errori 03 07 22
-            sum_h_v_W = torch.zeros(self.TEST_gen_hid_states[:,:,step].size()[0]).to(self.DEVICE)
+            if new_test1_train2_set ==1:
+                #potrebbero esserci errori 03 07 22
+                sum_h_v_W = torch.zeros(self.TEST_gen_hid_states[:,:,step].size()[0]).to(self.DEVICE)
 
-            for i in range(self.TEST_vis_states[:,:,step].size()[1]):
-                for j in range(self.TEST_gen_hid_states[:,:,step].size()[1]):
-                    sum_h_v_W = sum_h_v_W + torch.mul(torch.mul(self.TEST_vis_states[:,i,step],self.TEST_gen_hid_states[:,j,step]),self.vishid[i,j])
+                for i in range(self.TEST_vis_states[:,:,step].size()[1]):
+                    for j in range(self.TEST_gen_hid_states[:,:,step].size()[1]):
+                        sum_h_v_W = sum_h_v_W + torch.mul(torch.mul(self.TEST_vis_states[:,i,step],self.TEST_gen_hid_states[:,j,step]),self.vishid[i,j])
 
-            Energy_matrix[:,step] = -torch.matmul(self.TEST_vis_states[:,:,step],torch.transpose(self.visbiases,0,1)) - torch.matmul(self.TEST_gen_hid_states[:,:,step],torch.transpose(self.hidbiases,0,1)) -sum_h_v_W
-                    
+                Energy_matrix[:,step] = -torch.matmul(self.TEST_vis_states[:,:,step],torch.transpose(self.visbiases,0,1)) - torch.matmul(self.TEST_gen_hid_states[:,:,step],torch.transpose(self.hidbiases,0,1)) -sum_h_v_W
+                        
 
 
 
@@ -208,6 +209,7 @@ class DBN():
             self.TEST_gen_hid_prob = hid_states
             self.TEST_vis_prob = vis_states
             self.TEST_lbls = lbl_test
+            self.TEST_energy_matrix = Energy_matrix
         elif new_test1_train2_set == 2:
             self.TRAIN_gen_hid_states = hid_states
             self.TRAIN_vis_states = vis_states
