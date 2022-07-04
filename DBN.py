@@ -217,6 +217,7 @@ class DBN():
         return result_dict
         #return hid_states, vis_states, Energy_matrix
 
+
     def energy_f(self, hid_states, vis_states):
 
         sum_h_v_W = torch.zeros(hid_states.size()[0],1).to(self.DEVICE)
@@ -351,7 +352,40 @@ class DBN():
 
         plt.show() 
 
-        return vis_state          
+        return vis_state
+
+    def cosine_similarity(self, original_data, generated_data):
+
+        if len(original_data.size())>2:
+            vector_size = original_data.size()[1]*original_data.size()[2]
+            input_data =  original_data.view(len(original_data) , vector_size)
+
+        nr_steps = generated_data.size()[2]
+
+        input_data_mat = input_data.repeat(nr_steps,1,1)
+        input_data_mat=torch.transpose(input_data_mat,0,2)
+        input_data_mat=torch.transpose(input_data_mat,0,1)
+
+        cos = torch.nn.CosineSimilarity(dim=1)
+        c=cos(input_data_mat,generated_data)
+
+        SEM = torch.std(c,0)/math.sqrt(nr_steps)
+        SEM = SEM.cpu()
+        MEAN = torch.mean(c,0).cpu()
+
+        x = range(1,nr_steps+1)
+
+        plt.plot(x, MEAN, 'r-')
+
+        plt.fill_between(x,MEAN-SEM, MEAN+SEM, color='r',
+                        alpha=0.3)
+        plt.show()
+
+        return c
+
+
+     
+
 
 
     def save_model(self):
