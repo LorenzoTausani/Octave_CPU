@@ -191,7 +191,8 @@ class DBN():
             vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
 
             if  include_energy == 1:
-                Energy_matrix[:,step]= self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
+                state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
+                Energy_matrix[:,step] = state_energy[:,0]
 
         if new_test1_train2_set == 1:
             self.TEST_gen_hid_states = hid_states
