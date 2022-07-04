@@ -354,7 +354,7 @@ class DBN():
 
         return vis_state
 
-    def cosine_similarity(self, original_data, generated_data):
+    def cosine_similarity(self, original_data, generated_data, Plot=0):
 
         if len(original_data.size())>2:
             vector_size = original_data.size()[1]*original_data.size()[2]
@@ -373,13 +373,15 @@ class DBN():
         SEM = SEM.cpu()
         MEAN = torch.mean(c,0).cpu()
 
-        x = range(1,nr_steps+1)
+        if Plot ==1:
 
-        plt.plot(x, MEAN, 'r-')
+            x = range(1,nr_steps+1)
 
-        plt.fill_between(x,MEAN-SEM, MEAN+SEM, color='r',
-                        alpha=0.3)
-        plt.show()
+            plt.plot(x, MEAN, 'r-')
+
+            plt.fill_between(x,MEAN-SEM, MEAN+SEM, color='r',
+                            alpha=0.3)
+            plt.show()
 
         return c
 
