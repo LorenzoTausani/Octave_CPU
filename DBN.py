@@ -209,7 +209,13 @@ class DBN():
             self.TRAIN_vis_prob = vis_states
             self.TRAIN_lbls = lbl_train
 
-        return hid_states, vis_states, Energy_matrix
+        result_dict = dict(); 
+        result_dict['hid_states'] = hid_states
+        result_dict['vis_states'] = vis_states
+        result_dict['Energy_matrix'] = Energy_matrix
+
+        return result_dict
+        #return hid_states, vis_states, Energy_matrix
 
     def energy_f(self, hid_states, vis_states):
 
