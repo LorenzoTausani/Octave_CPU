@@ -354,7 +354,7 @@ class DBN():
 
         return vis_state
 
-    def cosine_similarity(self, original_data, generated_data, Plot=0, Color='r'):
+    def cosine_similarity(self, original_data, generated_data, Plot=0, Color='black', Linewidth=1):
 
         if len(original_data.size())>2:
             vector_size = original_data.size()[1]*original_data.size()[2]
@@ -377,17 +377,13 @@ class DBN():
 
             x = range(1,nr_steps+1)
 
-            plt.plot(x, MEAN, c = Color)
+            plt.plot(x, MEAN, c = Color, linewidth=Linewidth)
 
             plt.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
                             alpha=0.3)
             #plt.show()
 
         return c
-
-
-     
-
 
 
     def save_model(self):
