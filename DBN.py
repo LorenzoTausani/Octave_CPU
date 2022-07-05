@@ -381,7 +381,7 @@ class DBN():
 
             plt.fill_between(x,MEAN-SEM, MEAN+SEM, color='r',
                             alpha=0.3)
-            plt.show()
+            #plt.show()
 
         return c
 
