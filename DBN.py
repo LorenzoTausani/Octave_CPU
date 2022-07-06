@@ -155,6 +155,11 @@ class DBN():
         '''
         1 = test, 2 = training
         '''
+        if isinstance(temperature, list):
+            n_times = math.ceil(nr_steps/len(temperature))
+            temperature = temperature*n_times
+
+        
         numcases = input_data.size()[0]
         vector_size = input_data.size()[1]*input_data.size()[2]
         input_data =  input_data.view(len(input_data) , vector_size)
@@ -176,6 +181,8 @@ class DBN():
 
             if temperature==1:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+            elif isinstance(temperature, list):
+                hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature[step])
             else:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
 
@@ -185,6 +192,8 @@ class DBN():
 
             if temperature==1:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+            elif isinstance(temperature, list):
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature[step])
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
@@ -316,7 +325,8 @@ class DBN():
 
         for lbl in range(10):
             img = V[lbl:lbl+1].cpu()
-            _,reconstructed_imgs= self.reconstruct(img.to(self.DEVICE),nr_steps, temperature=temperature)
+            d= self.reconstruct(img.to(self.DEVICE),nr_steps, temperature=temperature)
+            reconstructed_imgs = d['vis_states']
 
             axis[0, lbl].imshow(torch.squeeze(img) , cmap = 'gray')
             axis[0, lbl].set_title("Original number:{}".format(lbl))
@@ -436,6 +446,11 @@ class DBN():
 
     def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1):
 
+        if isinstance(temperature, list):
+            n_times = math.ceil(nr_steps/len(temperature))
+            temperature = temperature*n_times
+
+
 
         numcases = input_hid_prob.size()[0]
         vector_size = input_hid_prob.size()[1]*input_hid_prob.size()[2]
@@ -456,6 +471,8 @@ class DBN():
 
                 if temperature==1:
                     hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+                elif isinstance(temperature, list):
+                    hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature[step])
                 else:
                     hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
             else:
@@ -467,6 +484,8 @@ class DBN():
 
             if temperature==1:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+            elif isinstance(temperature, list):
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature[step])
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
