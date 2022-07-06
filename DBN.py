@@ -359,6 +359,8 @@ class DBN():
         if len(original_data.size())>2:
             vector_size = original_data.size()[1]*original_data.size()[2]
             input_data =  original_data.view(len(original_data) , vector_size)
+        else:
+            input_data = original_data
 
         nr_steps = generated_data.size()[2]
 
