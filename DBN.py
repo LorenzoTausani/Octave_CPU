@@ -443,8 +443,8 @@ class DBN():
         hid_prob = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
         hid_states = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
 
-        vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
-        vis_states = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
+        vis_prob = torch.zeros(numcases,784, nr_steps).to(self.DEVICE)
+        vis_states = torch.zeros(numcases,784, nr_steps).to(self.DEVICE)
 
         Energy_matrix = torch.zeros(numcases, nr_steps).to(self.DEVICE)
 
@@ -475,7 +475,7 @@ class DBN():
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
                 Energy_matrix[:,step] = state_energy[:,0]
-                
+
 
         result_dict = dict(); 
         result_dict['hid_states'] = hid_states
