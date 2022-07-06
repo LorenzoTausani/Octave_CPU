@@ -197,16 +197,16 @@ class DBN():
         if new_test1_train2_set == 1:
             self.TEST_gen_hid_states = hid_states
             self.TEST_vis_states = vis_states
-            self.TEST_gen_hid_prob = hid_states
-            self.TEST_vis_prob = vis_states
+            self.TEST_gen_hid_prob = hid_prob
+            self.TEST_vis_prob = vis_prob
             self.TEST_lbls = lbl_test
             self.TEST_energy_matrix = Energy_matrix
 
         elif new_test1_train2_set == 2:
             self.TRAIN_gen_hid_states = hid_states
             self.TRAIN_vis_states = vis_states
-            self.TRAIN_gen_hid_prob = hid_states
-            self.TRAIN_vis_prob = vis_states
+            self.TRAIN_gen_hid_prob = hid_prob
+            self.TRAIN_vis_prob = vis_prob
             self.TRAIN_lbls = lbl_train
 
         result_dict = dict(); 
