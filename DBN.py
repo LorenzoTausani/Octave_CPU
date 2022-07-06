@@ -434,3 +434,52 @@ class DBN():
 
 
 
+    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1):
+
+
+        numcases = input_hid_prob.size()[0]
+        vector_size = input_hid_prob.size()[1]*input_hid_prob.size()[2]
+        input_hid_prob =  input_hid_prob.view(len(input_hid_prob) , vector_size)
+        hid_prob = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
+        hid_states = torch.zeros(numcases,self.layersize[0],nr_steps).to(self.DEVICE)
+
+        vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
+        vis_states = torch.zeros(numcases,vector_size, nr_steps).to(self.DEVICE)
+
+        Energy_matrix = torch.zeros(numcases, nr_steps).to(self.DEVICE)
+
+        for step in range(0,nr_steps):
+            
+
+            if step>0:
+                hid_activation = torch.matmul(vis_states[:,:,step-1],self.vishid) + self.hidbiases
+
+                if temperature==1:
+                    hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+                else:
+                    hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
+            else:
+                hid_prob[:,:,step]  = input_hid_prob
+
+            hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+
+            vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(self.vishid, 0, 1)) + self.visbiases
+
+            if temperature==1:
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+            else:
+                vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
+
+            vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+
+            if  include_energy == 1:
+                state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
+                Energy_matrix[:,step] = state_energy[:,0]
+                
+
+        result_dict = dict(); 
+        result_dict['hid_states'] = hid_states
+        result_dict['vis_states'] = vis_states
+        result_dict['Energy_matrix'] = Energy_matrix
+
+        return result_dict
