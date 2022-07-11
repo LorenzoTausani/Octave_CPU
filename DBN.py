@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pickle
 import matplotlib.pyplot as plt
+from scipy.stats import wasserstein_distance
 
 '''
 30 06 2022
@@ -502,3 +503,42 @@ class DBN():
         result_dict['Energy_matrix'] = Energy_matrix
 
         return result_dict
+
+    
+    def sliced_wasserstein(X, Y, num_proj=10):
+        #from https://stats.stackexchange.com/questions/404775/calculate-earth-movers-distance-for-two-grayscale-images
+        #this refers to https://link.springer.com/article/10.1007/s10851-014-0506-3
+
+        X = X.cpu()
+        Y = Y.cpu()
+        dim = X.shape[1]
+        ests = []
+        for _ in range(num_proj):
+            # sample uniformly from the unit sphere
+            dir = np.random.rand(dim)
+            dir /= np.linalg.norm(dir)
+
+            # project the data
+            X_proj = X @ dir
+            Y_proj = Y @ dir
+
+            # compute 1d wasserstein
+            ests.append(wasserstein_distance(X_proj, Y_proj))
+        return np.mean(ests)
+
+
+    def Wasserstein_allGenData(self, original_ds):
+
+        X = original_ds #sample_test_data
+        nr_samples = self.TEST_vis_states.size()[0]
+        nr_steps = self.TEST_vis_states.size()[2]
+        Y = self.TEST_vis_states.view((nr_samples,28,28,nr_steps))
+
+        Wass_mat = torch.zeros(nr_samples, nr_steps)
+        for s_idx in range(nr_samples):
+            for idx in range(nr_steps):
+                Wass_mat[s_idx, idx] = self.sliced_wasserstein(X[s_idx,:,:], Y[s_idx,:,:,idx], num_proj=10)
+
+        self.Wass_mat = Wass_mat
+        return Wass_mat
+
