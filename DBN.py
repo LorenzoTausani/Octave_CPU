@@ -314,7 +314,8 @@ class DBN():
 
         vis_activation = torch.matmul(hid_bin,torch.transpose(self.vishid, 0, 1)) + self.visbiases
         vis_prob  = torch.sigmoid(vis_activation)
-        vis_state = torch.bernoulli(vis_prob)
+        #vis_state = torch.bernoulli(vis_prob)
+        vis_state = vis_prob
 
         # stesso di reconstruct
 
