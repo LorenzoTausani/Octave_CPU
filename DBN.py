@@ -505,7 +505,7 @@ class DBN():
         return result_dict
 
     
-    def sliced_wasserstein(X, Y, num_proj=10):
+    def sliced_wasserstein(self, X, Y, num_proj=10):
         #from https://stats.stackexchange.com/questions/404775/calculate-earth-movers-distance-for-two-grayscale-images
         #this refers to https://link.springer.com/article/10.1007/s10851-014-0506-3
 
@@ -537,7 +537,7 @@ class DBN():
         Wass_mat = torch.zeros(nr_samples, nr_steps)
         for s_idx in range(nr_samples):
             for idx in range(nr_steps):
-                Wass_mat[s_idx, idx] = self.sliced_wasserstein(X[s_idx,:,:], Y[s_idx,:,:,idx], num_proj=10)
+                Wass_mat[s_idx, idx] = self.sliced_wasserstein(X[s_idx,:,:], Y[s_idx,:,:,idx])
 
         self.Wass_mat = Wass_mat
         return Wass_mat
