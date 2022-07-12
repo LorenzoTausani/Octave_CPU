@@ -540,5 +540,6 @@ class DBN():
                 Wass_mat[s_idx, idx] = self.sliced_wasserstein(X[s_idx,:,:], Y[s_idx,:,:,idx])
 
         self.Wass_mat = Wass_mat
+        self.save_model()
         return Wass_mat
 
