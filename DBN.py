@@ -312,7 +312,7 @@ class DBN():
 
         #hid_bin = torch.bernoulli(torch.transpose(gen_hidden_act,0,1)) #elimina questo passaggio
 
-        vis_activation = torch.matmul(gen_hidden_act,torch.transpose(self.vishid, 0, 1)) + self.visbiases #qui passa get_hidden_act
+        vis_activation = torch.matmul(torch.transpose(gen_hidden_act,0,1),torch.transpose(self.vishid, 0, 1)) + self.visbiases #qui passa get_hidden_act
         vis_prob  = torch.sigmoid(vis_activation)
         #vis_state = torch.bernoulli(vis_prob)
         vis_state = vis_prob
