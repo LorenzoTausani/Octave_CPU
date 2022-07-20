@@ -310,9 +310,9 @@ class DBN():
         %hid_bin = hid_prob > rand(size(hid_prob)); 
         '''
 
-        hid_bin = torch.bernoulli(torch.transpose(gen_hidden_act,0,1))
+        #hid_bin = torch.bernoulli(torch.transpose(gen_hidden_act,0,1)) #elimina questo passaggio
 
-        vis_activation = torch.matmul(hid_bin,torch.transpose(self.vishid, 0, 1)) + self.visbiases
+        vis_activation = torch.matmul(gen_hidden_act,torch.transpose(self.vishid, 0, 1)) + self.visbiases #qui passa get_hidden_act
         vis_prob  = torch.sigmoid(vis_activation)
         #vis_state = torch.bernoulli(vis_prob)
         vis_state = vis_prob
@@ -541,6 +541,6 @@ class DBN():
                 Wass_mat[s_idx, idx] = self.sliced_wasserstein(X[s_idx,:,:], Y[s_idx,:,:,idx])
 
         self.Wass_mat = Wass_mat
-        self.save_model()
+        
         return Wass_mat
 
