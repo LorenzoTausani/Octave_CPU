@@ -198,7 +198,9 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            #vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            vis_states[:,:,step] = vis_prob[:,:,step]
+
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
@@ -491,7 +493,8 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            #vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            vis_states[:,:,step] = vis_prob[:,:,step]
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
