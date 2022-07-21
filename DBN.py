@@ -319,73 +319,27 @@ class DBN():
         #vis_state = torch.bernoulli(vis_prob)
         vis_state = vis_prob
 
-        # stesso di reconstruct
-
-        rows = math.floor(nr_steps/row_step)
-
-        figure, axis = plt.subplots(rows+1, 10, figsize=(25,2.5*(1+rows)))
-
-        V = vis_state.view((10,28,28))
-
-        for lbl in range(10):
-            img = V[lbl:lbl+1].cpu()
-            d= self.reconstruct(img.to(self.DEVICE),nr_steps, temperature=temperature)
-            reconstructed_imgs = d['vis_states']
-
-            axis[0, lbl].imshow(torch.squeeze(img) , cmap = 'gray')
-            axis[0, lbl].set_title("Original number:{}".format(lbl))
-
-            axis[0, lbl].set_xticklabels([])
-            axis[0, lbl].set_yticklabels([])
-            axis[0, lbl].set_aspect('equal')
-
-            for idx,step in enumerate(range(row_step,nr_steps+1,row_step)):
-                idx = idx+1
-
-                reconstructed_img= reconstructed_imgs[:,:,step-1]
-                reconstructed_img = reconstructed_img.view((28,28)).cpu()
-
-                axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')
-                axis[idx, lbl].set_title("Rec.-step {}".format(step))
-
-                axis[idx, lbl].set_xticklabels([])
-                axis[idx, lbl].set_yticklabels([])
-                axis[idx, lbl].set_aspect('equal')
-
-
-
-            #plt.subplots_adjust(hspace=0)
-        plt.subplots_adjust(left=0.1, 
-                            bottom=0.1,  
-                            right=0.9,  
-                            top=0.9,  
-                            wspace=0.4,  
-                            hspace=0) 
-        
-        #plt.savefig("Reconstuct_plot.jpg")
-
-        plt.show() 
-
         return vis_state
 
     def cosine_similarity(self, original_data, generated_data, Plot=0, Color='black', Linewidth=1, axis=[]):
 
-        if len(original_data.size())>2:
+        if len(original_data.size())>2: # se vi sono più di due dimensioni, allora faccio il seguente resizing dei dati originali
             vector_size = original_data.size()[1]*original_data.size()[2]
             input_data =  original_data.view(len(original_data) , vector_size)
         else:
             input_data = original_data
 
-        nr_steps = generated_data.size()[2]
+        nr_steps = generated_data.size()[2] #il numero di steps di ricostruzione
 
-        input_data_mat = input_data.repeat(nr_steps,1,1)
+        input_data_mat = input_data.repeat(nr_steps,1,1) #vedi https://pytorch.org/docs/stable/generated/torch.Tensor.repeat.html
+        #ridimensiono per inputtare a cos dopo
         input_data_mat=torch.transpose(input_data_mat,0,2)
         input_data_mat=torch.transpose(input_data_mat,0,1)
 
         cos = torch.nn.CosineSimilarity(dim=1)
         c=cos(input_data_mat,generated_data)
 
-        SEM = torch.std(c,0)/math.sqrt(nr_steps)
+        SEM = torch.std(c,0)/math.sqrt(generated_data.size()[0]) #dovrebbe essere corretto dividere per il numero di dati
         SEM = SEM.cpu()
         MEAN = torch.mean(c,0).cpu()
 
@@ -393,7 +347,7 @@ class DBN():
             
             x = range(1,nr_steps+1)
             
-            if axis==[]:
+            if axis==[]: #se non è da plottare in un subplot
             
                 plt.plot(x, MEAN, c = Color, linewidth=Linewidth)
 
@@ -401,7 +355,7 @@ class DBN():
                                 alpha=0.3)
                 #plt.show()
             
-            else:
+            else: #se invece è da mettere in un subplot...
                 axis.plot(x, MEAN, c = Color, linewidth=Linewidth)
                 axis.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
                                 alpha=0.3)
