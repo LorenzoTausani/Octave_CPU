@@ -239,8 +239,42 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
   plt.show()
   
 
-#DA QUI LAVORO IN CORSO
 
+def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
+  S1_pHid = model.TEST_gen_hid_prob[:,:,0]
+  cmap = cm.get_cmap('hsv')
+  figure, axis = plt.subplots(1, model.Num_classes, figsize=(50,5))
+  lbls = range(model.Num_classes)
+  ref_mat = torch.zeros([model.Num_classes,1000], device =model.DEVICE)
+
+  for digit in range(model.Num_classes):
+      
+      l = torch.where(model.TEST_lbls == digit)
+      Hpr_digit = S1_pHid[l[0],:]
+      ref_mat[digit,:] = torch.mean(Hpr_digit,0)
+  
+  for digit_plot in range(model.Num_classes):
+      c=0
+      l = torch.where(model.TEST_lbls == digit_plot)
+      Hpr_digit = model.TEST_gen_hid_prob[l[0],:,:]
+      for digit in range(model.Num_classes):
+          model.cosine_similarity(ref_mat[digit:digit+1,:], Hpr_digit, Plot=1, Color = cmap(c/256), Linewidth=l_sz, axis=axis[digit_plot])
+          c = c+25
+      if digit_plot==9:
+        axis[digit_plot].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
+      axis[digit_plot].tick_params(axis='x', labelsize= dS)
+      axis[digit_plot].tick_params(axis='y', labelsize= dS)
+      axis[digit_plot].set_ylabel('Cosine similarity',fontsize=dS)
+      axis[digit_plot].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[digit_plot].set_title("Digit: {}".format(digit_plot),fontsize=dS)  
+
+        #da finire 05 07
+  plt.subplots_adjust(left=0.1, 
+                      bottom=0.1,  
+                      right=0.9,  
+                      top=0.9,  
+                      wspace=0.4,  
+                      hspace=0) 
 
 
 
