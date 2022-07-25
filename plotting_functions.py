@@ -5,6 +5,7 @@ from matplotlib import cm
 import math
 import numpy as np
 import torch
+import random
 
 def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   #questa funzione plotta l'accuratezza dei classificatori lineari sugli hidden states al variare del nr di steps di ricostruzione
@@ -276,7 +277,30 @@ def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
                       wspace=0.4,  
                       hspace=0) 
 
+def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model,temperature=1,row_step=5,dS = 50,lin_sz = 5):
+  img_idx =random.randint(0,reconstructed_imgs.size()[0])
+  img_idx = range(img_idx,img_idx+1)
+  deh =  Reconstruct_plot(reconstructed_imgs[img_idx,:,:],model, nr_steps=100, temperature= temperature,row_step = row_step, d_type='reconstructed')
+  figure, axis = plt.subplots(2, figsize=(15,30))
+  
 
+  axis[0].plot(dict_classifier['Cl_pred_matrix'][img_idx[0],:], linewidth = lin_sz)
+
+  axis[0].tick_params(axis='x', labelsize= dS)
+  axis[0].tick_params(axis='y', labelsize= dS)
+  axis[0].set_ylabel('Label classification',fontsize=dS)
+  axis[0].set_ylim([0,10])
+  axis[0].set_yticks(range(0,11))
+  axis[0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+
+  axis[1].plot(dict_classifier['Pred_entropy_mat'][img_idx[0],:], linewidth = lin_sz, c='r')
+  axis[1].tick_params(axis='x', labelsize= dS)
+  axis[1].tick_params(axis='y', labelsize= dS)
+  axis[1].set_ylabel('Classification entropy',fontsize=dS)
+  axis[1].set_ylim([0,2])
+  axis[1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+
+  plt.show()
 
 
 

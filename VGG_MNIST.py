@@ -4,7 +4,8 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import pandas as pd
+import numpy as np
 
 class VGGBlock(nn.Module):
     def __init__(self, in_channels, out_channels,batch_norm=False):
@@ -220,5 +221,49 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
 
 
 
+def classification_metrics(d_cl,model,sample_test_labels):
+  Cl_pred_matrix=d_cl['Cl_pred_matrix']
+  nr_ex=d_cl['Cl_pred_matrix'].size()[0]
 
+  index = range(model.Num_classes)
+  to_list = []
+  for digit in range(model.Num_classes+1):
+    to_list.append('to_'+ str(digit))
+  columns = ['Nr_visited_states','Nr_transitions']+to_list
+  df_average = pd.DataFrame(index=index, columns=columns)
+  df_sem = pd.DataFrame(index=index, columns=columns)
+
+
+  for digit in range(model.Num_classes):
+    digit_idx = sample_test_labels==digit
+    Vis_digit = d_cl['Cl_pred_matrix'][digit_idx,:]
+    nr_visited_states_list =[]
+    nr_transitions_list =[]
+    to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1)
+    
+    for nr_ex,example in enumerate(Vis_digit):
+      visited_states = torch.unique(example)
+      nr_visited_states = len(visited_states)
+      transitions,counts = torch.unique_consecutive(example,return_counts=True)
+      nr_transitions = len(transitions)
+      to_digits = torch.zeros(model.Num_classes+1)
+
+      for state in visited_states:
+        idx_state= transitions == state
+        to_digits[state.to(torch.long)] = torch.sum(counts[idx_state])
+
+      nr_visited_states_list.append(nr_visited_states)
+      nr_transitions_list.append(nr_transitions)
+      to_digits_mat[nr_ex,:] = to_digits
+    
+
+    df_average.at[digit,'Nr_visited_states'] = round(sum(nr_visited_states_list)/len(nr_visited_states_list),2)
+    df_average.at[digit,'Nr_transitions'] = round(sum(nr_transitions_list)/len(nr_transitions_list),2)
+    df_average.at[digit,2:] = torch.round(torch.mean(to_digits_mat,0),decimals=2)
+
+    df_sem.at[digit,'Nr_visited_states'] = round(np.std(nr_visited_states_list)/math.sqrt(len(nr_visited_states_list)),2)
+    df_sem.at[digit,'Nr_transitions'] = round(np.std(nr_transitions_list)/math.sqrt(len(nr_transitions_list)),2)
+    df_sem.at[digit,2:] = torch.round(torch.std(to_digits_mat,0)/math.sqrt(to_digits_mat.size()[0]),decimals=2)
+
+  return df_average, df_sem
   
