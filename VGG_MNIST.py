@@ -265,7 +265,7 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
     df_sem.at[digit,'Nr_transitions'] = round(np.std(nr_transitions_list)/math.sqrt(len(nr_transitions_list)),2)
     df_sem.at[digit,2:] = torch.round(torch.std(to_digits_mat,0)/math.sqrt(to_digits_mat.size()[0]),decimals=2)
 
-    if Plot==1:
+  if Plot==1:
         df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
         plt.title("Classification_metrics-1",fontsize=dS)
         plt.xlabel("Digit",fontsize=dS)
@@ -279,4 +279,6 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
   return df_average, df_sem
+
+  
   
