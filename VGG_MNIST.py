@@ -157,6 +157,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,0].tick_params(axis='x', labelsize= dS)
       axis[0,0].tick_params(axis='y', labelsize= dS)
       axis[0,0].set_ylabel('Accuracy',fontsize=dS)
+      axis[0,0].set_ylim([0,100])
       axis[0,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[0,0].set_title('VGG accuracy',fontsize=dS)
 
@@ -168,6 +169,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,1].tick_params(axis='x', labelsize= dS)
       axis[0,1].tick_params(axis='y', labelsize= dS)
       axis[0,1].set_ylabel('Entropy',fontsize=dS)
+      axis[0,1].set_ylim([0,1])
       axis[0,1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[0,1].set_title('Average entropy',fontsize=dS)
 
@@ -181,6 +183,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,0].tick_params(axis='x', labelsize= dS)
       axis[1,0].tick_params(axis='y', labelsize= dS)
       axis[1,0].set_ylabel('Accuracy',fontsize=dS)
+      axis[1,0].set_ylim([0,100])
       axis[1,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[1,0].set_title('VGG accuracy - digitwise',fontsize=dS)
         
@@ -198,6 +201,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,1].tick_params(axis='x', labelsize= dS)
       axis[1,1].tick_params(axis='y', labelsize= dS)
       axis[1,1].set_ylabel('Entropy',fontsize=dS)
+      axis[1,1].set_ylim([0,1])
       axis[1,1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[1,1].set_title('Entropy - digitwise',fontsize=dS)
 
@@ -270,12 +274,14 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
         plt.title("Classification_metrics-1",fontsize=dS)
         plt.xlabel("Digit",fontsize=dS)
         plt.ylabel("Nr of states",fontsize=dS)
+        plt.ylim([0,10])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
         df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv')
         plt.title("Classification_metrics-2",fontsize=dS)
         plt.xlabel("Digit",fontsize=dS)
         plt.ylabel("Average number of steps",fontsize=dS)
+        plt.ylim([0,100])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
   return df_average, df_sem
