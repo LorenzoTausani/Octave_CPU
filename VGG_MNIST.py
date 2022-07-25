@@ -157,7 +157,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,0].tick_params(axis='x', labelsize= dS)
       axis[0,0].tick_params(axis='y', labelsize= dS)
       axis[0,0].set_ylabel('Accuracy',fontsize=dS)
-      axis[0,0].set_ylim([0,100])
+      axis[0,0].set_ylim([0,1])
       axis[0,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[0,0].set_title('VGG accuracy',fontsize=dS)
 
@@ -183,7 +183,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,0].tick_params(axis='x', labelsize= dS)
       axis[1,0].tick_params(axis='y', labelsize= dS)
       axis[1,0].set_ylabel('Accuracy',fontsize=dS)
-      axis[1,0].set_ylim([0,100])
+      axis[1,0].set_ylim([0,1])
       axis[1,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[1,0].set_title('VGG accuracy - digitwise',fontsize=dS)
         
