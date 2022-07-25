@@ -221,9 +221,9 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
 
 
 
-def classification_metrics(d_cl,model,sample_test_labels):
-  Cl_pred_matrix=d_cl['Cl_pred_matrix']
-  nr_ex=d_cl['Cl_pred_matrix'].size()[0]
+def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
+  Cl_pred_matrix=dict_classifier['Cl_pred_matrix']
+  nr_ex=dict_classifier['Cl_pred_matrix'].size()[0]
 
   index = range(model.Num_classes)
   to_list = []
@@ -235,8 +235,8 @@ def classification_metrics(d_cl,model,sample_test_labels):
 
 
   for digit in range(model.Num_classes):
-    digit_idx = sample_test_labels==digit
-    Vis_digit = d_cl['Cl_pred_matrix'][digit_idx,:]
+    digit_idx = test_labels==digit
+    Vis_digit = dict_classifier['Cl_pred_matrix'][digit_idx,:]
     nr_visited_states_list =[]
     nr_transitions_list =[]
     to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1)
@@ -264,6 +264,19 @@ def classification_metrics(d_cl,model,sample_test_labels):
     df_sem.at[digit,'Nr_visited_states'] = round(np.std(nr_visited_states_list)/math.sqrt(len(nr_visited_states_list)),2)
     df_sem.at[digit,'Nr_transitions'] = round(np.std(nr_transitions_list)/math.sqrt(len(nr_transitions_list)),2)
     df_sem.at[digit,2:] = torch.round(torch.std(to_digits_mat,0)/math.sqrt(to_digits_mat.size()[0]),decimals=2)
+
+    if Plot==1:
+        df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
+        plt.title("Classification_metrics-1",fontsize=dS)
+        plt.xlabel("Digit",fontsize=dS)
+        plt.ylabel("Nr of states",fontsize=dS)
+        plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
+
+        df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv')
+        plt.title("Classification_metrics-2",fontsize=dS)
+        plt.xlabel("Digit",fontsize=dS)
+        plt.ylabel("Average number of steps",fontsize=dS)
+        plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
   return df_average, df_sem
   
