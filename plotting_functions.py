@@ -125,7 +125,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
       return d #restituisci l'output della ricostruzione
 
 
-def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5):
+def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[], temperature=1):
     '''
     metric_type= cos (cosine similarity), energy, perc_act_H (% of activated hidden), actnorm (activation norm(L2) on hid states or probs)
     '''
@@ -134,6 +134,8 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
     figure, axis = plt.subplots(1, 1, figsize=(15,15)) #setto le dimensioni della figura
     lbls = [] # qui storo le labels x legenda
+    if new_generated_data:
+       result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
 
     for digit in range(model.Num_classes): # per ogni digit...
         
@@ -195,22 +197,34 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     #DA FARE SETTARE LIMITI ASSE Y
 
 
-def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5):
+def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[],temperature=1):
   figure, axis = plt.subplots(1, 1, figsize=(15,15))
-  
+
+  if new_generated_data:
+     result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
+
   if metric_type=='cos':
-    model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = 'blue',Linewidth=l_sz)
+    if new_generated_data:
+        model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = 'blue',Linewidth=l_sz)
+    else:
+       model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = 'blue',Linewidth=l_sz)
     y_lbl = 'Cosine similarity'
   elif metric_type=='energy':
     Color = 'lime'
-    energy_mat_digit = model.TEST_energy_matrix
+    if new_generated_data:
+        energy_mat_digit = result_dict['Energy_matrix']
+    else:
+        energy_mat_digit = model.TEST_energy_matrix
     nr_steps = energy_mat_digit.size()[1]
     SEM = torch.std(energy_mat_digit,0)/math.sqrt(energy_mat_digit.size()[0])
     MEAN = torch.mean(energy_mat_digit,0).cpu()
     y_lbl = 'Energy'
   elif metric_type=='actnorm':
     Color = 'black'
-    gen_H = model.TEST_gen_hid_prob
+    if new_generated_data:
+        gen_H = result_dict['hid_prob']
+    else:    
+        gen_H = model.TEST_gen_hid_prob
     nr_steps = gen_H.size()[2]
     act_norm = gen_H.pow(2).sum(dim=1).sqrt()
     MEAN = torch.mean(act_norm,0).cpu()
@@ -218,7 +232,10 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
     y_lbl = 'Activation (L2) norm'
   else:
     Color = 'black'
-    gen_H = model.TEST_gen_hid_states
+    if new_generated_data:
+        gen_H = result_dict['hid_states']
+    else:    
+        gen_H = model.TEST_gen_hid_states 
     nr_steps = gen_H.size()[2]
     MEAN = torch.mean(torch.mean(gen_H,1)*100,0).cpu()
     SEM = (torch.std(torch.mean(gen_H,1)*100,0)/math.sqrt(gen_H.size()[0]))

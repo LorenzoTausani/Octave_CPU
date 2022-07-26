@@ -229,6 +229,8 @@ class DBN():
         result_dict['hid_states'] = hid_states
         result_dict['vis_states'] = vis_states
         result_dict['Energy_matrix'] = Energy_matrix
+        result_dict['hid_prob'] = hid_prob
+        result_dict['vis_prob'] = vis_prob
 
         return result_dict
         
