@@ -266,6 +266,7 @@ def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
       axis[digit_plot].tick_params(axis='x', labelsize= dS)
       axis[digit_plot].tick_params(axis='y', labelsize= dS)
       axis[digit_plot].set_ylabel('Cosine similarity',fontsize=dS)
+      axis[digit_plot].set_ylim([0,1])
       axis[digit_plot].set_xlabel('Nr. reconstruction steps',fontsize=dS)
       axis[digit_plot].set_title("Digit: {}".format(digit_plot),fontsize=dS)  
 
