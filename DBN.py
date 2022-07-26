@@ -213,7 +213,7 @@ class DBN():
                 vis_states[:,:,step] = vis_prob[:,:,step]
             else: #leaky_binary
                 TF_vis_states = vis_prob[:,:,step]>self.bin_threshold
-                vis_states[:,:,step] = TF_vis_states.double()
+                vis_states[:,:,step] = TF_vis_states.to(torch.float32)
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
@@ -338,7 +338,7 @@ class DBN():
             vis_state = vis_prob
         else: #leaky_binary
             TF_vis_states = vis_prob>self.bin_threshold
-            vis_state = TF_vis_states.double()        
+            vis_state = TF_vis_states.to(torch.float32)        
 
         return vis_state
 
@@ -485,7 +485,7 @@ class DBN():
                 vis_states[:,:,step] = vis_prob[:,:,step]
             else: #leaky_binary
                 TF_vis_states = vis_prob[:,:,step]>self.bin_threshold
-                vis_states[:,:,step] = TF_vis_states.double()
+                vis_states[:,:,step] = TF_vis_states.to(torch.float32)
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
