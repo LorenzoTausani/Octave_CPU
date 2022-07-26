@@ -197,20 +197,26 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     #DA FARE SETTARE LIMITI ASSE Y
 
 
-def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1):
-  #figure, axis = plt.subplots(1, 1, figsize=(15,15))
+def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1, single_line_plot=False):
+  if single_line_plot:
+     figure, axis = plt.subplots(1, 1, figsize=(15,15))
+     C_list=['blue','lime','black']
+  else:
+    cmap = cm.get_cmap('hsv')
+    cmap(temperature*10/256)
+    C_list=[cmap((temperature*10+7*25)/256),cmap((temperature*10+2*25)/256),cmap(temperature*10/256)]
 
   if new_generated_data:
      result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
-
+  
   if metric_type=='cos':
     if new_generated_data:
-        model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = 'blue',Linewidth=l_sz)
+        model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
     else:
-       model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = 'blue',Linewidth=l_sz)
+       model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = C_list[0],Linewidth=l_sz)
     y_lbl = 'Cosine similarity'
   elif metric_type=='energy':
-    Color = 'lime'
+    Color = C_list[1]
     if new_generated_data:
         energy_mat_digit = result_dict['Energy_matrix']
     else:
@@ -220,7 +226,7 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
     MEAN = torch.mean(energy_mat_digit,0).cpu()
     y_lbl = 'Energy'
   elif metric_type=='actnorm':
-    Color = 'black'
+    Color = C_list[2]
     if new_generated_data:
         gen_H = result_dict['hid_prob']
     else:    
@@ -231,7 +237,7 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
     SEM = (torch.std(act_norm,0)/math.sqrt(gen_H.size()[0]))
     y_lbl = 'Activation (L2) norm'
   else:
-    Color = 'black'
+    Color = C_list[2]
     if new_generated_data:
         gen_H = result_dict['hid_states']
     else:    
@@ -247,15 +253,16 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
     plt.plot(x, MEAN, c = Color, linewidth=l_sz)
     plt.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
                   alpha=0.3)
-  '''
-  axis.tick_params(axis='x', labelsize= dS)
-  axis.tick_params(axis='y', labelsize= dS)
-  axis.set_ylabel(y_lbl,fontsize=dS)
-  axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
-  axis.set_title('Average '+y_lbl,fontsize=dS)
-  #DA FARE SETTARE LIMITI ASSE Y
-  plt.show()
-  '''
+  if single_line_plot:
+     axis.tick_params(axis='x', labelsize= dS)
+     axis.tick_params(axis='y', labelsize= dS)
+     axis.set_ylabel(y_lbl,fontsize=dS)
+     axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+     axis.set_title('Average '+y_lbl,fontsize=dS)
+     if metric_type=='cos':
+        axis.set_ylim([0,1])
+     plt.show()
+  
 
 
 def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
