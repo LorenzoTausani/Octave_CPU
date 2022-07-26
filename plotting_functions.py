@@ -197,7 +197,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     #DA FARE SETTARE LIMITI ASSE Y
 
 
-def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[],temperature=1):
+def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1):
   figure, axis = plt.subplots(1, 1, figsize=(15,15))
 
   if new_generated_data:
