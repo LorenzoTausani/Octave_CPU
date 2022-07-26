@@ -31,6 +31,7 @@ class DBN():
                 device ='cuda',
                 Num_classes = 10,
                 Hidden_mode = 'binary',
+                bin_threshold = 0.5,
                 Visible_mode='continous'): #alternative: binary, leaky_binary
 
         self.nlayers = len(layersize)
@@ -50,6 +51,7 @@ class DBN():
         self.Num_classes = Num_classes
         self.Visible_mode = Visible_mode
         self.Hidden_mode = Hidden_mode
+        self.bin_threshold = bin_threshold
 
 
 
@@ -155,7 +157,7 @@ class DBN():
         return err, poshidprobs
 
 
-    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1, threshold=0.1):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1):
 
         '''
         1 = test, 2 = training
@@ -210,7 +212,7 @@ class DBN():
             elif self.Visible_mode=='continous':
                 vis_states[:,:,step] = vis_prob[:,:,step]
             else: #leaky_binary
-                TF_vis_states = vis_prob[:,:,step]>threshold
+                TF_vis_states = vis_prob[:,:,step]>self.bin_threshold
                 vis_states[:,:,step] = TF_vis_states.double()
 
             if  include_energy == 1:
@@ -298,7 +300,7 @@ class DBN():
         self.Cl_TEST_step_accuracy = te_acc
         return te_acc    
 
-    def label_biasing(self,nr_steps,temperature=1, row_step=10, threshold=0.1):
+    def label_biasing(self,nr_steps,temperature=1, row_step=10):
         '''
         scopo di questa funzione è implementare il label biasing descritto in
         https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00515/full
@@ -335,7 +337,7 @@ class DBN():
         elif self.Visible_mode=='continous':
             vis_state = vis_prob
         else: #leaky_binary
-            TF_vis_states = vis_prob>threshold
+            TF_vis_states = vis_prob>self.bin_threshold
             vis_state = TF_vis_states.double()        
 
         return vis_state
@@ -428,7 +430,7 @@ class DBN():
 
 
 
-    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1, threshold=0.1):
+    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1):
 
         if isinstance(temperature, list):
             n_times = math.ceil(nr_steps/len(temperature))
@@ -482,7 +484,7 @@ class DBN():
             elif self.Visible_mode=='continous':
                 vis_states[:,:,step] = vis_prob[:,:,step]
             else: #leaky_binary
-                TF_vis_states = vis_prob[:,:,step]>threshold
+                TF_vis_states = vis_prob[:,:,step]>self.bin_threshold
                 vis_states[:,:,step] = TF_vis_states.double()
 
             if  include_energy == 1:
