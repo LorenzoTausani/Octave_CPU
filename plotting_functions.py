@@ -198,7 +198,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
 
 
 def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1):
-  figure, axis = plt.subplots(1, 1, figsize=(15,15))
+  #figure, axis = plt.subplots(1, 1, figsize=(15,15))
 
   if new_generated_data:
      result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
@@ -247,15 +247,15 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
     plt.plot(x, MEAN, c = Color, linewidth=l_sz)
     plt.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
                   alpha=0.3)
-
+  '''
   axis.tick_params(axis='x', labelsize= dS)
   axis.tick_params(axis='y', labelsize= dS)
   axis.set_ylabel(y_lbl,fontsize=dS)
   axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
   axis.set_title('Average '+y_lbl,fontsize=dS)
   #DA FARE SETTARE LIMITI ASSE Y
-  #plt.show()
-  
+  plt.show()
+  '''
 
 
 def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
