@@ -29,7 +29,8 @@ class DBN():
                 init_momentum  = 0.5, # initial momentum coefficient
                 final_momentum = 0.9,
                 device ='cuda',
-                Num_classes = 10): # momentum coefficient
+                Num_classes = 10,
+                Visible_binary=False):
 
         self.nlayers = len(layersize)
         self.rbm_layers =[] #decidi che farci
@@ -46,6 +47,7 @@ class DBN():
         self.final_momentum = final_momentum
         self.DEVICE = device
         self.Num_classes = Num_classes
+        self.is_vis_binary = Visible_binary
 
 
 
@@ -198,8 +200,10 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            #vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
-            vis_states[:,:,step] = vis_prob[:,:,step]
+            if self.is_vis_binary:
+                vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            else:
+                vis_states[:,:,step] = vis_prob[:,:,step]
 
 
             if  include_energy == 1:
@@ -227,7 +231,7 @@ class DBN():
         result_dict['Energy_matrix'] = Energy_matrix
 
         return result_dict
-        #return hid_states, vis_states, Energy_matrix
+        
 
 
     def energy_f(self, hid_states, vis_states):
@@ -316,8 +320,12 @@ class DBN():
 
         vis_activation = torch.matmul(torch.transpose(gen_hidden_act,0,1),torch.transpose(self.vishid, 0, 1)) + self.visbiases #qui passa get_hidden_act
         vis_prob  = torch.sigmoid(vis_activation)
-        #vis_state = torch.bernoulli(vis_prob)
-        vis_state = vis_prob
+        
+        if self.is_vis_binary:
+            vis_state = torch.bernoulli(vis_prob)
+        else:
+            vis_state = vis_prob      
+        
 
         return vis_state
 
@@ -355,7 +363,7 @@ class DBN():
                                 alpha=0.3)
                 #plt.show()
             
-            else: #se invece è da mettere in un subplot...
+            else: #se invece è da mettere in un subplot
                 axis.plot(x, MEAN, c = Color, linewidth=Linewidth)
                 axis.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
                                 alpha=0.3)
@@ -447,8 +455,10 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            #vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
-            vis_states[:,:,step] = vis_prob[:,:,step]
+            if self.is_vis_binary:
+                vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+            else:
+                vis_states[:,:,step] = vis_prob[:,:,step]
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
