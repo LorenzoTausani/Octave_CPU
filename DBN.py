@@ -387,7 +387,12 @@ class DBN():
         except:
             h_train_size = 0
 
-        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)
+        if self.is_vis_binary:
+           V = 'Vbinary'
+        else:
+           V = 'Vcontinous'
+
+        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)+V
 
         object = self
  
@@ -471,6 +476,18 @@ class DBN():
         result_dict['Energy_matrix'] = Energy_matrix
 
         return result_dict
+
+
+
+
+
+
+
+
+
+
+
+
 
     
     def sliced_wasserstein(self, X, Y, num_proj=10):
