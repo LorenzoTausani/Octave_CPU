@@ -254,7 +254,7 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
   axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
   axis.set_title('Average '+y_lbl,fontsize=dS)
   #DA FARE SETTARE LIMITI ASSE Y
-  plt.show()
+  #plt.show()
   
 
 
