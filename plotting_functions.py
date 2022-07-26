@@ -204,7 +204,7 @@ def Average_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_
   else:
     cmap = cm.get_cmap('hsv')
     cmap(temperature*10/256)
-    C_list=[cmap((temperature*10+7*25)/256),cmap((temperature*10+2*25)/256),cmap(temperature*10/256)]
+    C_list=[cmap((temperature*15+7*25)/256),cmap((temperature*15+2*25)/256),cmap(temperature*15/256)]
 
   if new_generated_data:
      result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
