@@ -30,7 +30,8 @@ class DBN():
                 final_momentum = 0.9,
                 device ='cuda',
                 Num_classes = 10,
-                Visible_binary=False):
+                Hidden_mode = 'binary',
+                Visible_mode='continous'): #alternative: binary, leaky_binary
 
         self.nlayers = len(layersize)
         self.rbm_layers =[] #decidi che farci
@@ -47,7 +48,8 @@ class DBN():
         self.final_momentum = final_momentum
         self.DEVICE = device
         self.Num_classes = Num_classes
-        self.is_vis_binary = Visible_binary
+        self.Visible_mode = Visible_mode
+        self.Hidden_mode = Hidden_mode
 
 
 
@@ -153,7 +155,7 @@ class DBN():
         return err, poshidprobs
 
 
-    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1, threshold=0.1):
 
         '''
         1 = test, 2 = training
@@ -188,8 +190,11 @@ class DBN():
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature[step])
             else:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
-
-            hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+             
+            if self.Hidden_mode=='binary':
+                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+            else:
+                hid_states[:,:,step] = hid_prob[:,:,step]
 
             vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(self.vishid, 0, 1)) + self.visbiases
 
@@ -200,11 +205,13 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            if self.is_vis_binary:
+            if self.Visible_mode=='binary':
                 vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
-            else:
+            elif self.Visible_mode=='continous':
                 vis_states[:,:,step] = vis_prob[:,:,step]
-
+            else: #leaky_binary
+                TF_vis_states = vis_prob[:,:,step]>threshold
+                vis_states[:,:,step] = TF_vis_states.double()
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
@@ -291,7 +298,7 @@ class DBN():
         self.Cl_TEST_step_accuracy = te_acc
         return te_acc    
 
-    def label_biasing(self,nr_steps,temperature=1, row_step=10):
+    def label_biasing(self,nr_steps,temperature=1, row_step=10, threshold=0.1):
         '''
         scopo di questa funzione è implementare il label biasing descritto in
         https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00515/full
@@ -322,12 +329,14 @@ class DBN():
 
         vis_activation = torch.matmul(torch.transpose(gen_hidden_act,0,1),torch.transpose(self.vishid, 0, 1)) + self.visbiases #qui passa get_hidden_act
         vis_prob  = torch.sigmoid(vis_activation)
-        
-        if self.is_vis_binary:
+          
+        if self.Visible_mode=='binary':
             vis_state = torch.bernoulli(vis_prob)
-        else:
-            vis_state = vis_prob      
-        
+        elif self.Visible_mode=='continous':
+            vis_state = vis_prob
+        else: #leaky_binary
+            TF_vis_states = vis_prob>threshold
+            vis_state = TF_vis_states.double()        
 
         return vis_state
 
@@ -389,10 +398,12 @@ class DBN():
         except:
             h_train_size = 0
 
-        if self.is_vis_binary:
+        if self.Visible_mode=='binary':
            V = 'Vbinary'
-        else:
+        elif self.Visible_mode=='continous':
            V = 'Vcontinous'
+        else:
+           V = 'VleakyBinary'
 
         self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)+V
 
@@ -417,7 +428,7 @@ class DBN():
 
 
 
-    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1):
+    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1, threshold=0.1):
 
         if isinstance(temperature, list):
             n_times = math.ceil(nr_steps/len(temperature))
@@ -451,7 +462,10 @@ class DBN():
             else:
                 hid_prob[:,:,step]  = input_hid_prob
 
-            hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+            if self.Hidden_mode=='binary':
+                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+            else:
+                hid_states[:,:,step] = hid_prob[:,:,step]
 
             vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(self.vishid, 0, 1)) + self.visbiases
 
@@ -462,10 +476,14 @@ class DBN():
             else:
                 vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
 
-            if self.is_vis_binary:
+
+            if self.Visible_mode=='binary':
                 vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
-            else:
+            elif self.Visible_mode=='continous':
                 vis_states[:,:,step] = vis_prob[:,:,step]
+            else: #leaky_binary
+                TF_vis_states = vis_prob[:,:,step]>threshold
+                vis_states[:,:,step] = TF_vis_states.double()
 
             if  include_energy == 1:
                 state_energy = self.energy_f(hid_states[:,:,step], vis_states[:,:,step])
