@@ -280,16 +280,16 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
     df_sem.at[digit,'Nr_transitions'] = round(np.std(nr_transitions_list)/math.sqrt(len(nr_transitions_list)),2)
     df_sem.at[digit,2:] = torch.round(torch.std(to_digits_mat,0)/math.sqrt(to_digits_mat.size()[0]),decimals=2)
     
-    #ratio tra passaggi alla classe giusta e la seconda classe di più alta frequenza
-    to_mat = df_average.iloc[:, 2:-1]
-    ratio_list =[]
-    for index, row in to_mat.iterrows():
-        row = row.to_numpy()
-        to_2nd_largest = np.amax(np.delete(row, index, None))
-        ratio_2nd_on_trueClass = to_2nd_largest/row[index]
-        ratio_list.append(ratio_2nd_on_trueClass)
+  #ratio tra passaggi alla classe giusta e la seconda classe di più alta frequenza
+  to_mat = df_average.iloc[:, 2:-1]
+  ratio_list =[]
+  for index, row in to_mat.iterrows():
+      row = row.to_numpy()
+      to_2nd_largest = np.amax(np.delete(row, index, None))
+      ratio_2nd_on_trueClass = to_2nd_largest/row[index]
+      ratio_list.append(ratio_2nd_on_trueClass)
 
-    df_average['Ratio_2nd_trueClass'] = ratio_list
+  df_average['Ratio_2nd_trueClass'] = ratio_list
 
   if Plot==1:
         df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
