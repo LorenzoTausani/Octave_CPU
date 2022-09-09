@@ -261,8 +261,9 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
       transitions,counts = torch.unique_consecutive(no10_example,return_counts=True) #HA SENSO FARE COSì?
       nr_transitions = len(transitions)
       to_digits = torch.zeros(model.Num_classes+1)
-      transitions,counts = torch.unique_consecutive(example,return_counts=True)
 
+      transitions,counts = torch.unique_consecutive(example,return_counts=True)
+      visited_states = torch.unique(example) 
       for state in visited_states:
         idx_state= transitions == state
         to_digits[state.to(torch.long)] = torch.sum(counts[idx_state])
