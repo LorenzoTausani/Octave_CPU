@@ -226,31 +226,42 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
 
 
 def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
-  Cl_pred_matrix=dict_classifier['Cl_pred_matrix']
-  nr_ex=dict_classifier['Cl_pred_matrix'].size()[0]
+  '''
+  dict_classifier: dizionario del classificatore, con dentro, tra le altre cose, le predizioni del classificatore
+  model = la nostra RBM
+  test_labels = groundtruth labels
+  '''
+
+  Cl_pred_matrix=dict_classifier['Cl_pred_matrix'] #classes predicted by the classifier
+  nr_ex=dict_classifier['Cl_pred_matrix'].size()[0] #number of example 
 
   index = range(model.Num_classes)
+  #creo la lista delle categorie delle transizioni ad un certo digit
   to_list = []
-  for digit in range(model.Num_classes+1):
+  for digit in range(model.Num_classes+1): 
     to_list.append('to_'+ str(digit))
+
   columns = ['Nr_visited_states','Nr_transitions']+to_list
+  #creo i due dataframes: uno per le medie e l'altro per i relativi errori
   df_average = pd.DataFrame(index=index, columns=columns)
   df_sem = pd.DataFrame(index=index, columns=columns)
 
 
-  for digit in range(model.Num_classes):
-    digit_idx = test_labels==digit
-    Vis_digit = dict_classifier['Cl_pred_matrix'][digit_idx,:]
-    nr_visited_states_list =[]
-    nr_transitions_list =[]
-    to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1)
+  for digit in range(model.Num_classes): #per ogni digit...
+    digit_idx = test_labels==digit #trovo la posizione del digit tra le labels groundtruth...
+    Vis_digit = dict_classifier['Cl_pred_matrix'][digit_idx,:] #trovo le predizioni del classificatore in quelle posizioni
+    nr_visited_states_list =[] #qui listerò gli stati che vado a visitare
+    nr_transitions_list =[] #qui listerò invece il numero di transizioni che farò
+    to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1) #this is a matrix with nr.rows=nr.examples, nr.cols = 10+1 (nr. digits+no digits category)
     
-    for nr_ex,example in enumerate(Vis_digit):
-      visited_states = torch.unique(example)
+    for nr_ex,example in enumerate(Vis_digit): # example=tensor of the reconstructions category guessed by the classifier
+      no10_example=example[example!=10]
+      visited_states = torch.unique(no10_example) # find all the states (digits) visited by the RBM (NOTA:NON TENGO CONTO DEL 10)
       nr_visited_states = len(visited_states)
-      transitions,counts = torch.unique_consecutive(example,return_counts=True)
+      transitions,counts = torch.unique_consecutive(no10_example,return_counts=True) #HA SENSO FARE COSì?
       nr_transitions = len(transitions)
       to_digits = torch.zeros(model.Num_classes+1)
+      transitions,counts = torch.unique_consecutive(example,return_counts=True)
 
       for state in visited_states:
         idx_state= transitions == state
@@ -268,6 +279,17 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
     df_sem.at[digit,'Nr_visited_states'] = round(np.std(nr_visited_states_list)/math.sqrt(len(nr_visited_states_list)),2)
     df_sem.at[digit,'Nr_transitions'] = round(np.std(nr_transitions_list)/math.sqrt(len(nr_transitions_list)),2)
     df_sem.at[digit,2:] = torch.round(torch.std(to_digits_mat,0)/math.sqrt(to_digits_mat.size()[0]),decimals=2)
+    
+    #ratio tra passaggi alla classe giusta e la seconda classe di più alta frequenza
+    to_mat = df_average.iloc[:, 2:-1]
+    ratio_list =[]
+    for index, row in to_mat.iterrows():
+        row = row.to_numpy()
+        to_2nd_largest = np.amax(np.delete(row, index, None))
+        ratio_2nd_on_trueClass = to_2nd_largest/row[index]
+        ratio_list.append(ratio_2nd_on_trueClass)
+
+    df_average['Ratio_2nd_trueClass'] = ratio_list
 
   if Plot==1:
         df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
