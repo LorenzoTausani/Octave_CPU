@@ -5,6 +5,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 from scipy.stats import wasserstein_distance
+import copy
 
 '''
 30 06 2022
@@ -157,7 +158,7 @@ class DBN():
         return err, poshidprobs
 
 
-    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1):
+    def reconstruct(self, input_data, nr_steps, new_test1_train2_set = 0,lbl_train=[],lbl_test=[], temperature=1, include_energy = 1, consider_top=1000):
 
         '''
         1 = test, 2 = training
@@ -194,7 +195,13 @@ class DBN():
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
              
             if self.Hidden_mode=='binary':
-                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+                if consider_top<self.layersize[0]:
+                    vs, idxs = torch.topk(hid_prob[:,:,step], (self.layersize[0]-consider_top), largest = False) #da testare
+                    b = copy.deepcopy(hid_prob[:,:,step])
+                    b[idxs,1] = 0
+                    hid_states[:,:,step] = torch.bernoulli(b)
+                else:
+                    hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
             else:
                 hid_states[:,:,step] = hid_prob[:,:,step]
 
