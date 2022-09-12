@@ -438,7 +438,7 @@ class DBN():
 
 
 
-    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1):
+    def reconstruct_from_hidden(self, input_hid_prob , nr_steps, temperature=1, include_energy = 1,consider_top=1000):
 
         if isinstance(temperature, list):
             n_times = math.ceil(nr_steps/len(temperature))
@@ -473,7 +473,14 @@ class DBN():
                 hid_prob[:,:,step]  = input_hid_prob
 
             if self.Hidden_mode=='binary':
-                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+                if consider_top<self.layersize[0]:
+                    vs, idxs = torch.topk(hid_prob[:,:,step], (self.layersize[0]-consider_top), largest = False) #da testare
+                    b = copy.deepcopy(hid_prob[:,:,step])
+                    for row in range(b.size()[0]):
+                        b[row, idxs[row,:]]=0
+                    hid_states[:,:,step] = torch.bernoulli(b)
+                else:
+                    hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
             else:
                 hid_states[:,:,step] = hid_prob[:,:,step]
 
@@ -504,6 +511,9 @@ class DBN():
         result_dict['hid_states'] = hid_states
         result_dict['vis_states'] = vis_states
         result_dict['Energy_matrix'] = Energy_matrix
+        result_dict['hid_prob'] = hid_prob
+        result_dict['vis_prob'] = vis_prob
+
 
         return result_dict
 

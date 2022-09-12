@@ -53,7 +53,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         if cols==1:
             axis= np.expand_dims(axis, axis=1) #aggiungo una dimensione=1 così che non ho problemi nell'indicizzazione di axis
         if d_type=='hidden':
-            d= model.reconstruct_from_hidden(input_data , nr_steps, temperature=temperature) #faccio la ricostruzione da hidden
+            d= model.reconstruct_from_hidden(input_data , nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione da hidden
             input_data=d['vis_states'] #estraggo le immagini ricostruite
 
 
