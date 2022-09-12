@@ -198,9 +198,8 @@ class DBN():
                 if consider_top<self.layersize[0]:
                     vs, idxs = torch.topk(hid_prob[:,:,step], (self.layersize[0]-consider_top), largest = False) #da testare
                     b = copy.deepcopy(hid_prob[:,:,step])
-                    b[idxs,1] = 0
-                    print(b.size())
-                    print(hid_states.size())
+                    for row in range(b.size()[0]):
+                        b[row, idxs[row,:]]=0
                     hid_states[:,:,step] = torch.bernoulli(b)
                 else:
                     hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
