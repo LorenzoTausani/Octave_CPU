@@ -37,7 +37,7 @@ def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   plt.show()
 
 
-def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example'):
+def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example', consider_top = 1000):
     '''
     INPUT: 
     input_data: possono essere o dataset da ricostruire (in tal caso d_type='example'), o visible ottenuti da label biasing (in tal caso d_type='lbl_biasing')
@@ -63,10 +63,10 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         good_digits_idx = [71,5,82,32,56,15,21,64,110,58] #bei digits selezionati manualmente da me (per example)
         if d_type=='example':
           orig_data = input_data # copio in questo modo per poi ottenere agilmente i dati originali
-          d= model.reconstruct(input_data.data[good_digits_idx].to(model.DEVICE),nr_steps, temperature=temperature) #faccio la ricostruzione
+          d= model.reconstruct(input_data.data[good_digits_idx].to(model.DEVICE),nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         else:
           orig_data = input_data.view((10,28,28))
-          d= model.reconstruct(orig_data,nr_steps, temperature=temperature) #faccio la ricostruzione
+          d= model.reconstruct(orig_data,nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         input_data=d['vis_states'] #estraggo le immagini ricostruite
     
     for lbl in range(cols): #per ogni digit...
