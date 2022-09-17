@@ -348,7 +348,7 @@ class DBN():
             TF_vis_states = vis_prob>self.bin_threshold
             vis_state = TF_vis_states.to(torch.float32)        
 
-        return vis_state
+        return vis_state, gen_hidden_act
 
     def cosine_similarity(self, original_data, generated_data, Plot=0, Color='black', Linewidth=1, axis=[]):
 
