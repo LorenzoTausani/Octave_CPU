@@ -297,7 +297,7 @@ def classification_metrics(dict_classifier,model,test_labels, Plot=1, dS = 30):
         plt.title("Classification_metrics-1",fontsize=dS)
         plt.xlabel("Digit",fontsize=dS)
         plt.ylabel("Nr of states",fontsize=dS)
-        plt.ylim([0,10])
+        plt.ylim([0,15])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
         df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv')
