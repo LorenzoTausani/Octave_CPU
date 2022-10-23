@@ -101,18 +101,19 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
     labels = torch.zeros(input_data.size()[0]).to(model.DEVICE)
 
 
-  for step in range(input_data.size()[2]):#input_data.size()[2]
-    V = input_data[:,:,step]
-    V = torch.unsqueeze(V.view((input_data.size()[0],28,28)),1)
-    #print(V.size())
-    V_int = F.interpolate(V, size=(32, 32), mode='bicubic', align_corners=False)
+  for step in range(input_data.size()[2]):#i.e per ogni step di ricostruzione
+    V = input_data[:,:,step] # estraggo i visibili di ciascun esempio allo step iteratore
+    V = torch.unsqueeze(V.view((input_data.size()[0],28,28)),1) #cambio la dimensione del tensore: da n_ex x 784 a n_ex x 1 x 28 x 28
+    V_int = F.interpolate(V, size=(32, 32), mode='bicubic', align_corners=False) # creo un nuovo tensore a dimensionalità n_ex x 1 x 32 x 32
     #tocca fare a batch, il che è abbastanza una fatica. Ma così mangia tutta la GPU
     _dataset = torch.utils.data.TensorDataset(V_int,labels) # create your datset
+    if Batch_sz > input_data.size()[0]: # se il batch size selezionato è più grande dell'input size...
+      Batch_sz = input_data.size()[0]
     _dataloader = torch.utils.data.DataLoader(_dataset,batch_size=Batch_sz,drop_last = True) # create your dataloader
     
     index = 0
     acc_v = torch.zeros(math.floor(input_data.size()[0]/Batch_sz))
-    last_batch_size =Batch_sz*acc_v.size()[0] - input_data.size()[0]
+    #last_batch_size =Batch_sz*acc_v.size()[0] - input_data.size()[0] #per ora non utilizzato
     
     n_it = 0
     for (input, lbls) in _dataloader:
