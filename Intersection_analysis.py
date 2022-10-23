@@ -71,7 +71,7 @@ class Intersection_analysis:
       print(digit_digit_common_elements_count_biasing)
       print(digit_digit_common_elements_count_hidAvg)
 
-    def generate_chimera_lbl_biasing(self, elements_of_interest = [8,2], nr_of_examples = 1000):
+    def generate_chimera_lbl_biasing(self, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
       dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
 
 
@@ -80,7 +80,7 @@ class Intersection_analysis:
       b_vec = torch.unsqueeze(b_vec,2)
       #b_vec = torch.unsqueeze(b_vec,0)
       
-      d= self.model.reconstruct_from_hidden(b_vec, self.nr_steps)
+      d= self.model.reconstruct_from_hidden(b_vec, self.nr_steps,temperature=temperature)
 
       
       reconstructed_imgs=d['vis_states']
@@ -88,6 +88,6 @@ class Intersection_analysis:
       df_average,df_sem = classification_metrics(d_cl,model)
       
       if nr_of_examples < 16:
-          Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden')
+          Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
-      return d
+      return (d, df_average)
