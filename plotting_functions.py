@@ -207,7 +207,7 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     C_list=[cmap((temperature*15+7*25)/256),cmap((temperature*15+2*25)/256),cmap(temperature*15/256)]
 
   if new_generated_data:
-    if Intersection_analysis == []
+    if Intersection_analysis == []:
       result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
     else:
       result_dict, df_average = Ian.generate_chimera_lbl_biasing(elements_of_interest = [1,7], nr_of_examples = 1000, temperature = temperature)
