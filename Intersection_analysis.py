@@ -1,3 +1,5 @@
+import torch
+
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
   gen_H = model.TRAIN_gen_hid_prob[:,:,0]
