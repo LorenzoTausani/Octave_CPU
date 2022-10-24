@@ -1,3 +1,18 @@
+def mean_h_prior(model):
+  mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
+  gen_H = model.TRAIN_gen_hid_prob[:,:,0]
+
+  for it in range(model.Num_classes+1):
+    if it>9:
+      mean_h_prob_mat[it,:] = torch.mean(gen_H,0)
+    else:
+      l = torch.where(model.TRAIN_lbls == it)
+      gen_H_digit = gen_H[l[0],:]
+      mean_h_prob_mat[it,:] = torch.mean(gen_H_digit,0)
+
+  mean_h_prob_mat=torch.unsqueeze(mean_h_prob_mat,2)
+  return mean_h_prob_mat
+
 class Intersection_analysis:
     def __init__(self, model, top_k_Hidden=100, nr_steps=100):
         self.model = model
@@ -92,17 +107,3 @@ class Intersection_analysis:
       
       return (d, df_average)
 
-def mean_h_prior(model):
-  mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
-  gen_H = model.TRAIN_gen_hid_prob[:,:,0]
-
-  for it in range(model.Num_classes+1):
-    if it>9:
-      mean_h_prob_mat[it,:] = torch.mean(gen_H,0)
-    else:
-      l = torch.where(model.TRAIN_lbls == it)
-      gen_H_digit = gen_H[l[0],:]
-      mean_h_prob_mat[it,:] = torch.mean(gen_H_digit,0)
-
-  mean_h_prob_mat=torch.unsqueeze(mean_h_prob_mat,2)
-  return mean_h_prob_mat
