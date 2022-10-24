@@ -22,6 +22,7 @@ class Intersection_analysis:
         self.model = model
         self.top_k_Hidden = top_k_Hidden
         self.nr_steps = nr_steps
+        
     def do_intersection_analysis(self):
       vis_lbl_bias, hid_bias=self.model.label_biasing(self.nr_steps) #label biasing
       hidAvg = mean_h_prior(self.model) # hidden biasing
@@ -90,7 +91,7 @@ class Intersection_analysis:
       print(digit_digit_common_elements_count_biasing)
       print(digit_digit_common_elements_count_hidAvg)
 
-    def generate_chimera_lbl_biasing(self, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
+    def generate_chimera_lbl_biasing(self, VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
       dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
 
 
