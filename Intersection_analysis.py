@@ -4,7 +4,7 @@ class Intersection_analysis:
         self.top_k_Hidden = top_k_Hidden
         self.nr_steps = nr_steps
     def do_intersection_analysis(self):
-      vis_lbl_bias, hid_bias=model.label_biasing(self.nr_steps) #label biasing
+      vis_lbl_bias, hid_bias=self.model.label_biasing(self.nr_steps) #label biasing
       hidAvg = mean_h_prior(self.model) # hidden biasing
 
       vettore_indici_allDigits_biasing = torch.empty((0),device= self.model.DEVICE)
@@ -84,8 +84,8 @@ class Intersection_analysis:
 
       
       reconstructed_imgs=d['vis_states']
-      d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, plot=0)
-      df_average,df_sem = classification_metrics(d_cl,model)
+      d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, self.model, plot=0)
+      df_average,df_sem = classification_metrics(d_cl,self.model)
       
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
