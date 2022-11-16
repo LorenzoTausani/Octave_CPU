@@ -240,7 +240,8 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   #creo la lista delle categorie delle transizioni ad un certo digit
   to_list = []
   for digit in range(model.Num_classes+1): 
-    to_list.append('to_'+ str(digit))
+    #to_list.append('to_'+ str(digit))
+    to_list.append('state '+ str(digit))
 
   columns = ['Nr_visited_states','Nr_transitions']+to_list
   #creo i due dataframes: uno per le medie e l'altro per i relativi errori
