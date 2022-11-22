@@ -330,6 +330,137 @@ def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model
 
   plt.show()
 
+def between_VH_plots(dict_VH_LayerState_comparison,dS=23,yLab = 'Accuracy'):
+  #pairwise stat tests
+  comparisons=list(itertools.combinations(dict_VH_LayerState_comparison.keys(),2))
+  significant_comparisons=[]
+
+  for comparison in comparisons:
+    campione1=np.asarray(dict_VH_LayerState_comparison[comparison[0]])
+    campione2=np.asarray(dict_VH_LayerState_comparison[comparison[1]])
+    U, p = scipy.stats.wilcoxon(campione1,campione2, alternative='two-sided')
+    if p*len(comparisons) < 0.05: #bonferroni correction
+        significant_comparisons.append([comparison, p*len(comparisons)])
+
+
+  cmap = cm.get_cmap('hsv')
+  cat=0
+  x_labs = []
+  plt.figure(figsize=(8,8))
+  for VH_state in dict_VH_LayerState_comparison:
+    c=0
+    for y in dict_VH_LayerState_comparison[VH_state]:
+          
+        # plotting the corresponding x with y 
+        # and respective color
+        plt.scatter(cat, y, c = cmap(c/256), s = 50, linewidth = 0)
+        c+=25
+    cat+=1
+    if VH_state[0]=='continous':
+      xLab='Vc_'
+    else:
+      xLab='Vb_'
+    if VH_state[1]=='continous':
+      xLab=xLab+'Hc'
+    else:
+      xLab=xLab+'Hb'
+
+    x_labs.append(xLab)
+  
+  if yLab == 'Accuracy':
+    bottom=0
+    top=1
+  elif yLab == 'Nr of transitions':
+    bottom=0
+    top=15
+  elif yLab == 'Nr steps in no digit state':
+    bottom=0
+    top=50
+  else: #nr of visible states
+    bottom=0
+    top=5    
+    
+    
+
+
+  plt.ylabel(yLab, fontsize = dS)
+  plt.tick_params('both',labelsize=dS)
+  plt.xlabel('Visible and hiddel layer type', fontsize = dS)      
+  plt.xticks(range(3), x_labs)
+  plt.yticks(np.arange (bottom, top+top/4, top/4))
+  plt.ylim(bottom,top+top/4)
+  
+  y_range = top - bottom
+  for i, significant_combination in enumerate(significant_comparisons):
+      # Columns corresponding to the datasets of interest
+
+      x1 = 0
+      for comb in significant_combination[0][0]:
+        if comb=='binary':
+          x1 +=1
+      x2 = 0
+      for comb in significant_combination[0][1]:
+        if comb=='binary':
+          x2 +=1
+
+      # What level is this bar among the bars above the plot?
+      level = len(significant_comparisons) - i
+      # Plot the bar
+      bar_height = (y_range * 0.07 * level) + top
+      bar_tips = bar_height - (y_range * 0.02)
+      plt.plot([x1, x1, x2, x2],[bar_tips, bar_height, bar_height, bar_tips], lw=1, c='k')
+      # Significance level
+      p = significant_combination[1]
+      if p < 0.001:
+          sig_symbol = '***'
+      elif p < 0.01:
+          sig_symbol = '**'
+      elif p < 0.05:
+          sig_symbol = '*'
+      text_height = bar_height + (y_range * 0.01)
+      plt.text((x1 + x2) * 0.5, text_height, sig_symbol, ha='center', va='bottom', c='k', fontsize=13)
+
+
+  plt.show()
+
+def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temperature,consider_top_H, VGG_cl, model, plot=1):
+  '''
+  #Se si vuole avere anche VbHc
+
+  LayerState_type=['continous','binary']
+  VH_LayerStates = [ls for ls in itertools.product(LayerState_type, repeat=2)]
+  '''
+  VH_LayerStates=list(itertools.combinations_with_replacement(['continous','binary'],2))
+  dict_VHstate_accuracy={}
+  dict_VHstate_nrVisitedSts = {}
+  #dict_VHstate_nrTransitions={}
+  dict_VHstate_toNoNum={}
+
+  for VH_state in VH_LayerStates:
+    model.Visible_mode = VH_state[0]
+    model.Hidden_mode = VH_state[1]
+
+    d= model.reconstruct(sample_test_data, nr_steps, temperature=temperature,consider_top=consider_top_H)
+    reconstructed_imgs=d['vis_states']
+    d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=sample_test_labels)
+    df_average,df_sem = classification_metrics(d_cl,model,sample_test_labels)
+
+    acc_digitwise=[]
+    for idx in range(10):
+      acc_digitwise.append(d_cl['digitwise_acc'][idx][-1])
+    dict_VHstate_accuracy[VH_state]=acc_digitwise
+    dict_VHstate_nrVisitedSts[VH_state]=df_average['Nr_visited_states'].to_numpy()
+    #dict_VHstate_nrTransitions[VH_state]=df_average['Nr_transitions'].to_numpy()
+    dict_VHstate_toNoNum[VH_state] =df_average['state 10'].to_numpy()
+
+  if plot==1:
+    between_VH_plots(dict_VHstate_accuracy)
+    between_VH_plots(dict_VHstate_nrVisitedSts,yLab = 'Nr of visited states')
+    #between_VH_plots(dict_VHstate_nrTransitions,yLab = 'Nr of transitions')
+    between_VH_plots(dict_VHstate_toNoNum,yLab = 'Nr steps in no digit state')
+
+  return dict_VHstate_accuracy, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
+
 
 
 
