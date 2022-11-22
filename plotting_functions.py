@@ -194,6 +194,8 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     axis.set_ylabel(y_lbl,fontsize=dS)
     axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
     axis.set_title(y_lbl+' - digitwise',fontsize=dS)
+    if metric_type=='cos':
+      axis.set_ylim([0,1])
     #DA FARE SETTARE LIMITI ASSE Y
 
 
@@ -210,7 +212,7 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     if Intersection_analysis == []:
       result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
     else:
-      result_dict, df_average = Ian.generate_chimera_lbl_biasing(elements_of_interest = [1,7], nr_of_examples = 1000, temperature = temperature)
+      result_dict, df_average = Intersection_analysis.generate_chimera_lbl_biasing(elements_of_interest = [1,7], nr_of_examples = 1000, temperature = temperature)
   
   if metric_type=='cos':
     if new_generated_data:
