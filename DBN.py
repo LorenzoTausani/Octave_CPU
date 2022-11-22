@@ -390,7 +390,7 @@ class DBN():
                                 alpha=0.3)
 
 
-        return c
+        return MEAN, SEM
 
 
     def save_model(self):
