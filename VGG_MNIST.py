@@ -293,15 +293,39 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   
   #ratio tra passaggi alla classe giusta e la seconda classe di più alta frequenza
   to_mat = df_average.iloc[:, 2:-1]
+  sem_mat = df_sem.iloc[:, 2:-1]
+  def error_propagation(measures, measures_error, operation = 'average'):
+    #https://www.geol.lsu.edu/jlorenzo/geophysics/uncertainties/Uncertaintiespart2.html
+    nr_of_measures = len(measures_error)
+    if isinstance(measures, list):
+      measures = np.asarray(measures)
+    if isinstance(measures_error, list):
+      measures_error = np.asarray(measures_error)
+
+    if operation=='average':
+      propagated_err = (1/nr_of_measures)*np.sum(np.power((measures_error),2)) #senza radice quadrata?
+    elif operation == 'ratio':
+      propagated_err = np.sum(measures_error/measures)*(measures[0]/measures[1]) #i.e. the result of the ratio
+
+    return propagated_err
+
   if test_labels!=[]:
     ratio_list =[]
+    ratio_propErr = []
     for index, row in to_mat.iterrows():
+        measures_err=[]
         row = row.to_numpy()
         to_2nd_largest = np.amax(np.delete(row, index, None))
+        measures_err.append(sem_mat.iloc[index,np.argmax(row==to_2nd_largest)]) #errore dell'originale
+        measures_err.append(sem_mat.iloc[index,index]) #errore del secondo digit
         ratio_2nd_on_trueClass = to_2nd_largest/row[index]
         ratio_list.append(ratio_2nd_on_trueClass)
+        ratio_propErr.append(error_propagation([to_2nd_largest,row[index]], measures_err, operation = 'ratio'))
 
     df_average['Ratio_2nd_trueClass'] = ratio_list
+    df_sem['Ratio_2nd_trueClass'] = ratio_propErr
+
+    
   '''
   else:
      df_average = df_average.iloc[0]
