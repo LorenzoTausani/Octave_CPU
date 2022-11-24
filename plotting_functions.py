@@ -129,7 +129,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
       return d #restituisci l'output della ricostruzione
 
 
-def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[], temperature=1):
+def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_dictionary=[], metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[], temperature=1):
     '''
     metric_type= cos (cosine similarity), energy, perc_act_H (% of activated hidden), actnorm (activation norm(L2) on hid states or probs)
     '''
@@ -144,19 +144,19 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     for digit in range(model.Num_classes): # per ogni digit...
         
         Color = cmap(c/256) #setto il colore di quel determinato digit
-        l = torch.where(model.TEST_lbls == digit) #trovo gli indici dei test data che contengono quel determinato digit
+        l = torch.where(sample_test_labels == digit) #trovo gli indici dei test data che contengono quel determinato digit
         nr_examples= len(l[0]) #nr degli esempi di quel digit (i.e. n)
 
         if metric_type=='cos':
             original_data = sample_test_data[l[0],:,:] #estraggo i dati originali cui confrontare le ricostruzioni
-            generated_data = model.TEST_vis_states[l[0],:,:] #estraggo le ricostruzioni
+            generated_data = gen_data_dictionary['vis_states'][l[0],:,:] #estraggo le ricostruzioni
             model.cosine_similarity(original_data, generated_data, Plot=1, Color = Color, Linewidth=l_sz) #calcolo la cosine similarity tra 
             #original e generated data
             if digit==0: #evito di fare sta operazione più volte
              y_lbl = 'Cosine similarity'
 
         elif metric_type=='energy':
-            energy_mat_digit = model.TEST_energy_matrix[l[0],:] #mi trovo le entrate della energy matrix relative agli esempi di quel digit
+            energy_mat_digit = gen_data_dictionary['Energy_matrix'][l[0],:] #mi trovo le entrate della energy matrix relative agli esempi di quel digit
             nr_steps = energy_mat_digit.size()[1] #calcolo il numero di step di ricostruzione a partire dalla energy mat
             SEM = torch.std(energy_mat_digit,0)/math.sqrt(nr_examples) # mi calcolo la SEM
             MEAN = torch.mean(energy_mat_digit,0).cpu() # e la media between examples
@@ -165,7 +165,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
              y_lbl = 'Energy'
 
         elif metric_type=='actnorm':
-            gen_H_digit = model.TEST_gen_hid_prob[l[0],:,:]
+            gen_H_digit = gen_data_dictionary['hid_prob'][l[0],:,:] 
             act_norm = gen_H_digit.pow(2).sum(dim=1).sqrt()
             nr_steps = gen_H_digit.size()[2]
             SEM = torch.std(act_norm,0)/math.sqrt(nr_examples)
@@ -174,7 +174,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
              y_lbl = 'Activation (L2) norm'
 
         else: #perc_act_H
-            gen_H_digit = model.TEST_gen_hid_states[l[0],:,:]
+            gen_H_digit = gen_data_dictionary['hid_states'][l[0],:,:]
             nr_steps = gen_H_digit.size()[2]
             SEM = torch.std(torch.mean(gen_H_digit,1)*100,0)/math.sqrt(nr_examples)
             MEAN = torch.mean(torch.mean(gen_H_digit,1)*100,0).cpu()
