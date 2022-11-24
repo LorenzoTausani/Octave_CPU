@@ -276,10 +276,10 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
   
 
 
-def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
+def Cosine_hidden_plot(model,  dS = 40, l_sz = 5):
   S1_pHid = model.TEST_gen_hid_prob[:,:,0]
   cmap = cm.get_cmap('hsv')
-  figure, axis = plt.subplots(1, model.Num_classes, figsize=(50,5))
+  figure, axis = plt.subplots(1, model.Num_classes, figsize=(50,10))
   lbls = range(model.Num_classes)
   ref_mat = torch.zeros([model.Num_classes,1000], device =model.DEVICE)
 
@@ -300,9 +300,12 @@ def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
         axis[digit_plot].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
       axis[digit_plot].tick_params(axis='x', labelsize= dS)
       axis[digit_plot].tick_params(axis='y', labelsize= dS)
-      axis[digit_plot].set_ylabel('Cosine similarity',fontsize=dS)
+      if digit_plot==0:
+        axis[digit_plot].set_ylabel('Cosine similarity',fontsize=dS)
+      else:
+        axis[digit_plot].set_yticklabels([])
       axis[digit_plot].set_ylim([0,1])
-      axis[digit_plot].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[digit_plot].set_xlabel('Nr. steps',fontsize=dS)
       axis[digit_plot].set_title("Digit: {}".format(digit_plot),fontsize=dS)  
 
         #da finire 05 07
@@ -310,7 +313,7 @@ def Cosine_hidden_plot(model,  dS = 20, l_sz = 5):
                       bottom=0.1,  
                       right=0.9,  
                       top=0.9,  
-                      wspace=0.4,  
+                      wspace=0.15,  
                       hspace=0) 
 
 def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model,temperature=1,row_step=5,dS = 50,lin_sz = 5):
