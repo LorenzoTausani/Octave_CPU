@@ -203,7 +203,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
     #DA FARE SETTARE LIMITI ASSE Y
 
 
-def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = [], metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1, single_line_plot=True):
+def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [],sample_test_data = [], metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1, single_line_plot=True):
   if single_line_plot:
      figure, axis = plt.subplots(1, 1, figsize=(15,15))
      C_list=['blue','lime','black']
@@ -222,14 +222,17 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     if new_generated_data:
         model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
     else:
-       model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = C_list[0],Linewidth=l_sz)
+       #model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = C_list[0],Linewidth=l_sz) #old code
+       model.cosine_similarity(sample_test_data, gen_data_dictionary['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
+
     y_lbl = 'Cosine similarity'
   elif metric_type=='energy':
     Color = C_list[1]
     if new_generated_data:
         energy_mat_digit = result_dict['Energy_matrix']
     else:
-        energy_mat_digit = model.TEST_energy_matrix
+        #energy_mat_digit = model.TEST_energy_matrix #old
+        energy_mat_digit = gen_data_dictionary['Energy_matrix']
     nr_steps = energy_mat_digit.size()[1]
     SEM = torch.std(energy_mat_digit,0)/math.sqrt(energy_mat_digit.size()[0])
     MEAN = torch.mean(energy_mat_digit,0).cpu()
@@ -239,7 +242,8 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     if new_generated_data:
         gen_H = result_dict['hid_prob']
     else:    
-        gen_H = model.TEST_gen_hid_prob
+        #gen_H = model.TEST_gen_hid_prob #old
+        gen_H = gen_data_dictionary['hid_prob']
     nr_steps = gen_H.size()[2]
     act_norm = gen_H.pow(2).sum(dim=1).sqrt()
     MEAN = torch.mean(act_norm,0).cpu()
@@ -250,7 +254,8 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     if new_generated_data:
         gen_H = result_dict['hid_states']
     else:    
-        gen_H = model.TEST_gen_hid_states 
+        #gen_H = model.TEST_gen_hid_states #old
+        gen_H = gen_data_dictionary['hid_states']
     nr_steps = gen_H.size()[2]
     MEAN = torch.mean(torch.mean(gen_H,1)*100,0).cpu()
     SEM = (torch.std(torch.mean(gen_H,1)*100,0)/math.sqrt(gen_H.size()[0]))
@@ -276,26 +281,36 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
   
 
 
-def Cosine_hidden_plot(model,  dS = 40, l_sz = 5):
-  S1_pHid = model.TEST_gen_hid_prob[:,:,0]
+def Cosine_hidden_plot(model,gen_data_dictionary, sample_test_labels, dS = 40, l_sz = 5):
+  #S1_pHid = model.TEST_gen_hid_prob[:,:,0]
+  S1_pHid = gen_data_dictionary['hid_prob'][:,:,0]
   cmap = cm.get_cmap('hsv')
   figure, axis = plt.subplots(1, model.Num_classes, figsize=(50,10))
   lbls = range(model.Num_classes)
   ref_mat = torch.zeros([model.Num_classes,1000], device =model.DEVICE)
+  torch.empty((model.Num_classes,100,model.Num_classes), dtype=torch.int64)
 
   for digit in range(model.Num_classes):
       
-      l = torch.where(model.TEST_lbls == digit)
+      l = torch.where(sample_test_labels == digit)
       Hpr_digit = S1_pHid[l[0],:]
       ref_mat[digit,:] = torch.mean(Hpr_digit,0)
   
   for digit_plot in range(model.Num_classes):
       c=0
-      l = torch.where(model.TEST_lbls == digit_plot)
-      Hpr_digit = model.TEST_gen_hid_prob[l[0],:,:]
+      l = torch.where(sample_test_labels == digit_plot)
+      Hpr_digit = gen_data_dictionary['hid_prob'][l[0],:,:]
       for digit in range(model.Num_classes):
-          model.cosine_similarity(ref_mat[digit:digit+1,:], Hpr_digit, Plot=1, Color = cmap(c/256), Linewidth=l_sz, axis=axis[digit_plot])
+          MEAN, SEM = model.cosine_similarity(ref_mat[digit:digit+1,:], Hpr_digit, Plot=1, Color = cmap(c/256), Linewidth=l_sz, axis=axis[digit_plot])
+          if digit==0:
+            digit_plot_mat_MEAN = MEAN
+            digit_plot_mat_SEM = SEM
+          else:
+            digit_plot_mat_MEAN = torch.vstack((digit_plot_mat_MEAN,MEAN))
           c = c+25
+      #if digit_plot==0:
+        #MEAN_cosSim_tensor = digit_plot_mat_MEAN
+      print(digit_plot_mat_MEAN.size())
       if digit_plot==9:
         axis[digit_plot].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
       axis[digit_plot].tick_params(axis='x', labelsize= dS)
@@ -315,6 +330,7 @@ def Cosine_hidden_plot(model,  dS = 40, l_sz = 5):
                       top=0.9,  
                       wspace=0.15,  
                       hspace=0) 
+  #return 
 
 def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model,temperature=1,row_step=5,dS = 50,lin_sz = 5):
   img_idx =random.randint(0,reconstructed_imgs.size()[0])
