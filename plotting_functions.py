@@ -180,7 +180,7 @@ def Digitwise_metrics_plot(model, sample_test_data, metric_type='cos', dS = 50, 
             MEAN = torch.mean(torch.mean(gen_H_digit,1)*100,0).cpu()
             
             if digit==0: #evito di fare sta operazione più volte
-             y_lbl = '% active h units'
+             y_lbl = '% active H units'
 
         if not(metric_type=='cos'):
             SEM = SEM.cpu() #sposto la SEM su CPU x plotting
@@ -254,7 +254,7 @@ def Average_metrics_plot(model, Intersection_analysis = [],sample_test_data = []
     nr_steps = gen_H.size()[2]
     MEAN = torch.mean(torch.mean(gen_H,1)*100,0).cpu()
     SEM = (torch.std(torch.mean(gen_H,1)*100,0)/math.sqrt(gen_H.size()[0]))
-    y_lbl = '% active h units'
+    y_lbl = '% active H units'
 
   if not(metric_type=='cos'):
     SEM = SEM.cpu()
