@@ -140,7 +140,7 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
     lbls = [] # qui storo le labels x legenda
     if new_generated_data:
        result_dict = model.reconstruct(sample_test_data, nr_steps=100, temperature=temperature, include_energy = 1)
-
+    
     for digit in range(model.Num_classes): # per ogni digit...
         
         Color = cmap(c/256) #setto il colore di quel determinato digit
@@ -288,7 +288,8 @@ def Cosine_hidden_plot(model,gen_data_dictionary, sample_test_labels, dS = 40, l
   figure, axis = plt.subplots(1, model.Num_classes, figsize=(50,10))
   lbls = range(model.Num_classes)
   ref_mat = torch.zeros([model.Num_classes,1000], device =model.DEVICE)
-  torch.empty((model.Num_classes,100,model.Num_classes), dtype=torch.int64)
+  MEAN_cosSim_tensor=torch.empty((model.Num_classes,gen_data_dictionary['hid_prob'].size()[2],model.Num_classes))
+  SEM_cosSim_tensor=torch.empty((model.Num_classes,gen_data_dictionary['hid_prob'].size()[2],model.Num_classes))
 
   for digit in range(model.Num_classes):
       
@@ -307,10 +308,12 @@ def Cosine_hidden_plot(model,gen_data_dictionary, sample_test_labels, dS = 40, l
             digit_plot_mat_SEM = SEM
           else:
             digit_plot_mat_MEAN = torch.vstack((digit_plot_mat_MEAN,MEAN))
+            digit_plot_mat_SEM = torch.vstack((digit_plot_mat_SEM,SEM))
           c = c+25
-      #if digit_plot==0:
-        #MEAN_cosSim_tensor = digit_plot_mat_MEAN
-      print(digit_plot_mat_MEAN.size())
+      #print(digit_plot_mat_MEAN)
+      MEAN_cosSim_tensor[:,:,digit_plot] = digit_plot_mat_MEAN
+      SEM_cosSim_tensor[:,:,digit_plot] = digit_plot_mat_SEM
+
       if digit_plot==9:
         axis[digit_plot].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
       axis[digit_plot].tick_params(axis='x', labelsize= dS)
@@ -330,7 +333,8 @@ def Cosine_hidden_plot(model,gen_data_dictionary, sample_test_labels, dS = 40, l
                       top=0.9,  
                       wspace=0.15,  
                       hspace=0) 
-  #return 
+  return MEAN_cosSim_tensor, SEM_cosSim_tensor
+
 
 def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model,temperature=1,row_step=5,dS = 50,lin_sz = 5):
   img_idx =random.randint(0,reconstructed_imgs.size()[0])
