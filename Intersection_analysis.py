@@ -1,7 +1,9 @@
 import torch
 import random
 import VGG_MNIST
+import plotting_functions
 from VGG_MNIST import *
+from plotting_functions import *
 
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
