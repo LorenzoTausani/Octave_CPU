@@ -1,4 +1,5 @@
 import torch
+import random
 import VGG_MNIST
 from VGG_MNIST import *
 
@@ -91,12 +92,20 @@ class Intersection_analysis:
       print(digit_digit_common_elements_count_biasing)
       print(digit_digit_common_elements_count_hidAvg)
 
-    def generate_chimera_lbl_biasing(self, VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
-      dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
 
-
+    def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
       b_vec =torch.zeros(nr_of_examples,1000)
-      b_vec[:,self.result_dict_biasing[dictionary_key].long()]=1
+      if not(elements_of_interest =='rand'):
+        dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
+        b_vec[:,self.result_dict_biasing[dictionary_key].long()]=1
+
+      else: #write 'rand' in elements of interest
+        for i in range(nr_of_examples):
+          n1 = random.randint(0, 9)
+          n2 = random.randint(0, 9)
+          dictionary_key = str(n1)+','+str(n2)
+          b_vec[i,self.result_dict_biasing[dictionary_key].long()]=1
+
       b_vec = torch.unsqueeze(b_vec,2)
       #b_vec = torch.unsqueeze(b_vec,0)
       
