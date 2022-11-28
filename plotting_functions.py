@@ -276,6 +276,9 @@ def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [
      if metric_type=='cos':
         axis.set_ylim([0,1])
      plt.show()
+
+
+  return MEAN,SEM
   
   
   
