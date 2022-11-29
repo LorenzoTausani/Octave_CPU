@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
 import numpy as np
+import seaborn as sns
 
 class VGGBlock(nn.Module):
     def __init__(self, in_channels, out_channels,batch_norm=False):
@@ -235,6 +236,29 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
 
   Cl_pred_matrix=dict_classifier['Cl_pred_matrix'] #classes predicted by the classifier
   nr_ex=dict_classifier['Cl_pred_matrix'].size()[0] #number of example 
+  #Transition matrix
+  Transition_matrix = torch.zeros((11,11))
+
+  for row in Cl_pred_matrix:
+    for n in range(1,len(row)):
+      #print(n)
+      #print(row[n-1].long(),row[n].long())
+      Transition_matrix[row[n-1].long(),row[n].long()] += 1
+
+  Transition_matrix_rowNorm = Transition_matrix
+
+  for i in range(11):
+    Transition_matrix_rowNorm[i,:] = torch.div(Transition_matrix[i,:],torch.sum(Transition_matrix,1)[i])
+  '''
+  plt.figure(figsize=(15, 15))
+  ax = sns.heatmap(Transition_matrix_rowNorm, linewidth=0.5, annot=True, annot_kws={"size": 12},square=True)
+  plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
+  plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
+
+  plt.show()
+  '''
+  
+
 
   
   #creo la lista delle categorie delle transizioni ad un certo digit
@@ -268,7 +292,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
       no10_example=example[example!=10]
       visited_states = torch.unique(no10_example) # find all the states (digits) visited by the RBM (NOTA:NON TENGO CONTO DEL 10)
       nr_visited_states = len(visited_states)
-      transitions,counts = torch.unique_consecutive(no10_example,return_counts=True) #HA SENSO FARE COSì?
+      transitions,counts = torch.unique_consecutive(no10_example,return_counts=True)
       nr_transitions = len(transitions)
       to_digits = torch.zeros(model.Num_classes+1)
 
@@ -332,6 +356,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
      df_sem = df_sem.iloc[0]
   '''
   if Plot==1:
+
         if test_labels!=[]:
           df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
           plt.xlabel("Digit",fontsize=dS)
@@ -356,6 +381,6 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.ylim([0,100])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
-  return df_average, df_sem
+  return df_average, df_sem, Transition_matrix_rowNorm
   
   
