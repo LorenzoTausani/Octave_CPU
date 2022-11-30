@@ -93,6 +93,14 @@ class Intersection_analysis:
 
       print(digit_digit_common_elements_count_biasing)
       print(digit_digit_common_elements_count_hidAvg)
+      lbl_bias_freqV = digit_digit_common_elements_count_biasing.view(100)/torch.sum(digit_digit_common_elements_count_biasing.view(100))
+      avgH_bias_freqV = digit_digit_common_elements_count_hidAvg.view(100)/torch.sum(digit_digit_common_elements_count_hidAvg.view(100))
+
+      print(scipy.stats.chisquare(lbl_bias_freqV, f_exp=avgH_bias_freqV))
+
+
+      return digit_digit_common_elements_count_biasing, digit_digit_common_elements_count_hidAvg
+
 
 
     def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
@@ -121,5 +129,5 @@ class Intersection_analysis:
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
-      return (d, df_average)
+      return d, df_average,df_sem
 
