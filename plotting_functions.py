@@ -535,6 +535,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   fig, ax = plt.subplots(figsize=(15,10))
   cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
   Color = cmap(np.linspace(0, 250, num=11)/256)
+  Color[-1]=np.array([0.1, 0.1, 0.1, 1])
   rects1 = ax.bar(range(11),Active_hid,yerr=Active_hid_SEM, color=Color)
   ax.set_xlabel('Digit state', fontsize = dS)
   ax.set_ylabel('Nr of active units', fontsize = dS)
