@@ -161,7 +161,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,0].tick_params(axis='y', labelsize= dS)
       axis[0,0].set_ylabel('Accuracy',fontsize=dS)
       axis[0,0].set_ylim([0,1])
-      axis[0,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[0,0].set_xlabel('Nr. of steps',fontsize=dS)
       axis[0,0].set_title('Classifier accuracy',fontsize=dS)
 
 
@@ -173,7 +173,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,1].tick_params(axis='y', labelsize= dS)
       axis[0,1].set_ylabel('Entropy',fontsize=dS)
       axis[0,1].set_ylim([0,1])
-      axis[0,1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[0,1].set_xlabel('Nr. of steps',fontsize=dS)
       axis[0,1].set_title('Average entropy',fontsize=dS)
 
       for digit in range(model.Num_classes):
@@ -187,7 +187,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,0].tick_params(axis='y', labelsize= dS)
       axis[1,0].set_ylabel('Accuracy',fontsize=dS)
       axis[1,0].set_ylim([0,1])
-      axis[1,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[1,0].set_xlabel('Nr. of steps',fontsize=dS)
       axis[1,0].set_title('Classifier accuracy - digitwise',fontsize=dS)
         
       c=0
@@ -205,7 +205,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,1].tick_params(axis='y', labelsize= dS)
       axis[1,1].set_ylabel('Entropy',fontsize=dS)
       axis[1,1].set_ylim([0,1])
-      axis[1,1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+      axis[1,1].set_xlabel('Nr. of steps',fontsize=dS)
       axis[1,1].set_title('Entropy - digitwise',fontsize=dS)
 
       plt.subplots_adjust(left=0.1, 
