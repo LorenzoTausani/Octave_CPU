@@ -367,7 +367,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         
         plt.ylabel("Nr of states",fontsize=dS)
         plt.ylim([0,20])
-        plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
+        plt.legend(bbox_to_anchor=(0.64,1), loc="upper left", fontsize=dS)
         
         if test_labels!=[]:
           df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv')
@@ -382,5 +382,3 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
   return df_average, df_sem, Transition_matrix_rowNorm
-  
-  
