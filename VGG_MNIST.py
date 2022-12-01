@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from matplotlib.colors import ListedColormap
 import math
 import torch
 import torch.nn as nn
@@ -263,9 +264,15 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   
   #creo la lista delle categorie delle transizioni ad un certo digit
   to_list = []
-  for digit in range(model.Num_classes+1): 
-    #to_list.append('to_'+ str(digit))
-    to_list.append('state '+ str(digit))
+  for digit in range(model.Num_classes+1):
+    if  digit < model.Num_classes:
+      #to_list.append('to_'+ str(digit))
+      to_list.append(str(digit))
+    else:
+      to_list.append('Non-digit')
+
+
+
 
   columns = ['Nr_visited_states','Nr_transitions']+to_list
   #creo i due dataframes: uno per le medie e l'altro per i relativi errori
@@ -349,6 +356,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
     df_average['Ratio_2nd_trueClass'] = ratio_list
     df_sem['Ratio_2nd_trueClass'] = ratio_propErr
 
+
     
   '''
   else:
@@ -368,16 +376,22 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.ylabel("Nr of states",fontsize=dS)
         plt.ylim([0,20])
         plt.legend(bbox_to_anchor=(0.64,1), loc="upper left", fontsize=dS)
+
+        cmap = cm.get_cmap('hsv')
+        newcolors = cmap(np.linspace(0, 1, 256))
+        black = np.array([0.1, 0.1, 0.1, 1])
+        newcolors[-25:, :] = black
+        newcmp = ListedColormap(newcolors)
         
         if test_labels!=[]:
-          df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv')
+          df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp)
           plt.xlabel("Digit",fontsize=dS)       
         else:
-          df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv',xticks=[])
+          df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
 
         #plt.title("Classification_metrics-2",fontsize=dS)
         
-        plt.ylabel("Average number of steps",fontsize=dS)
+        plt.ylabel("Average nr of steps",fontsize=dS)
         plt.ylim([0,100])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
