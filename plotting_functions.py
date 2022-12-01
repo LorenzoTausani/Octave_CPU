@@ -2,14 +2,20 @@
 from operator import index
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from matplotlib.colors import ListedColormap
+import pandas as pd
 import math
 import numpy as np
 import torch
 import random
 import itertools
 import scipy
+import seaborn as sns
+
 from VGG_MNIST import Classifier_accuracy
 from VGG_MNIST import classification_metrics
+
+
 
 def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   #questa funzione plotta l'accuratezza dei classificatori lineari sugli hidden states al variare del nr di steps di ricostruzione
@@ -493,3 +499,47 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
     between_VH_plots(dict_VHstate_toNoNum,yLab = 'Nr steps in no digit state')
 
   return dict_VHstate_nrTransitions, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
+
+
+def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
+  average_Hid = torch.zeros(11,1000)
+  Active_hid = torch.zeros(11,1)
+  Active_hid_SEM = torch.zeros(11,1)
+  for class_of_interest in range(11):
+
+    Non_num_Hid = torch.zeros(torch.sum(d_cl['Cl_pred_matrix']==class_of_interest),1000)
+
+    counter = 0
+    for example in range(1000):
+      for step in range(100):
+        if (d_cl['Cl_pred_matrix']==class_of_interest)[example,step]==True:
+          Non_num_Hid[counter,:]=d_Reconstruct_t1_allH['hid_states'][example,:,step]
+          counter+=1
+
+    average_Hid[class_of_interest,:]=torch.mean(Non_num_Hid,0)
+    Active_hid[class_of_interest] = torch.mean(torch.sum(Non_num_Hid,1))
+    Active_hid_SEM[class_of_interest] = torch.std(torch.sum(Non_num_Hid,1))/np.sqrt(torch.sum(Non_num_Hid,1).size()[0])
+    #print(torch.std(torch.sum(Non_num_Hid,1)),np.sqrt(torch.sum(Non_num_Hid,1).size()[0]) )
+
+  #plot P(h=1) distribution
+  df = pd.DataFrame(torch.transpose(average_Hid,0,1).numpy())
+
+  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=1.5)
+  distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
+  _, ylabels = plt.yticks()
+  distr_percAct_units.set_yticklabels(ylabels, size=dS)
+  _, xlabels = plt.xticks()
+  distr_percAct_units.set_xticklabels(xlabels, size=dS)
+  plt.ylim(0, 1)
+
+  fig, ax = plt.subplots(figsize=(15,10))
+  cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
+  Color = cmap(np.linspace(0, 250, num=11)/256)
+  rects1 = ax.bar(range(11),Active_hid,yerr=Active_hid_SEM, color=Color)
+  ax.set_xlabel('Digit state', fontsize = dS)
+  ax.set_ylabel('Nr of active units', fontsize = dS)
+  ax.set_xticks(range(11))
+  ax.tick_params( labelsize= dS) 
+  ax.set_ylim(0,1000)
+
+  return average_Hid, Active_hid, Active_hid_SEM
