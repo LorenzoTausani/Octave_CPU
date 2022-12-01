@@ -15,6 +15,21 @@ import seaborn as sns
 from VGG_MNIST import Classifier_accuracy
 from VGG_MNIST import classification_metrics
 
+def mean_h_prior(model):
+  mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
+  gen_H = model.TRAIN_gen_hid_prob[:,:,0]
+
+  for it in range(model.Num_classes+1):
+    if it>9:
+      mean_h_prob_mat[it,:] = torch.mean(gen_H,0)
+    else:
+      l = torch.where(model.TRAIN_lbls == it)
+      gen_H_digit = gen_H[l[0],:]
+      mean_h_prob_mat[it,:] = torch.mean(gen_H_digit,0)
+
+  mean_h_prob_mat=torch.unsqueeze(mean_h_prob_mat,2)
+  return mean_h_prob_mat
+
 
 
 def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
@@ -544,3 +559,122 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   ax.set_ylim(0,1000)
 
   return average_Hid, Active_hid, Active_hid_SEM
+
+
+def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_test_labels,type='sample_reconstruct', elements_of_interest = [1,7], t_beginning = 0.1,t_end = 2, t_step=0.1, consider_top_H=1000, plot = 'yes'):
+  temperatures = np.arange(t_beginning, t_end, t_step)
+  variables_of_interest = ['Nr_visited_states', 'Nr_transitions','state 10'] #,'Ratio_2nd_trueClass'
+  AxisLabels_dict={'Nr_visited_states':'Nr of visited states', 'Nr_transitions': 'Nr of state transitions', 'state 10': 'Non-digit state time'}
+  results_mat = np.zeros((len(temperatures),len(variables_of_interest)))  
+  c=0
+  for t in temperatures:
+    if not(type=='chimera'):
+      if type=='sample_reconstruct':
+        d= model.reconstruct(sample_test_data, 100, temperature=t, consider_top=consider_top_H)
+        reconstructed_imgs=d['vis_states']
+        d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=sample_test_labels, plot=0)
+        df_average,df_sem = classification_metrics(d_cl,model,sample_test_labels, Plot=0) 
+
+      elif type=='label biasing':
+        vis_lbl_bias, gen_hidden_act=model.label_biasing(nr_steps=100)
+        for n in range(100): #100 is for 1000 total label biasing digits
+          if n==0:
+            VStack_lblBias = vis_lbl_bias
+          else:
+            VStack_lblBias = torch.vstack((VStack_lblBias,vis_lbl_bias))
+            
+        VStack_lblBias = VStack_lblBias.view((1000,28,28))
+        d= model.reconstruct(VStack_lblBias, nr_steps=100, temperature=t,consider_top=consider_top_H) 
+        reconstructed_imgs=d['vis_states']
+        VStack_labels=torch.tensor(range(10), device = 'cuda')
+        VStack_labels=VStack_labels.repeat(100)
+        d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=VStack_labels, plot=0)
+        df_average,df_sem = classification_metrics(d_cl,model,VStack_labels, Plot=0)
+
+      elif type=='avg hidden biasing':
+        Avg_hid_digits = mean_h_prior(model)[:10,:,:]
+        for n in range(100): #100 is for 1000 total label biasing digits
+          if n==0:
+            VStack_avgHid_digits = Avg_hid_digits
+          else:
+            VStack_avgHid_digits = torch.vstack((VStack_avgHid_digits,Avg_hid_digits))
+
+        d = model.reconstruct_from_hidden(VStack_avgHid_digits , nr_steps=100, temperature=t, consider_top=consider_top_H) #faccio la ricostruzione da hidden
+        
+        reconstructed_imgs=d['vis_states']
+        VStack_labels=torch.tensor(range(10), device = 'cuda')
+        VStack_labels=VStack_labels.repeat(100)
+        d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=VStack_labels, plot=0)
+        df_average,df_sem = classification_metrics(d_cl,model,VStack_labels, Plot=0)
+
+
+    elif type=='chimera':
+      #d, df_average = Ian.generate_chimera_lbl_biasing(VGG_cl, elements_of_interest = elements_of_interest, nr_of_examples = sample_test_labels.size()[0], temperature = t)
+      d, df_average, df_sem = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = elements_of_interest, nr_of_examples = 1000, temperature = t)
+    m = df_average[variables_of_interest].mean()
+    results_mat[c,:] = m.to_numpy()
+    c+=1
+
+  results_mat = pd.DataFrame(results_mat, columns = variables_of_interest)
+
+  #results_mat['temperature'] = temperatures
+
+  if plot == 'yes':
+    dS=15
+    figure, axis = plt.subplots(1, 3, figsize=(15,5))
+    C_list=['blue','red','green','orange']
+    counterColor = 0
+
+    for colName, ax in zip(results_mat, axis.ravel()):
+
+      ax.plot(temperatures, results_mat[colName],linewidth = '2.5',marker='o', c=C_list[counterColor])
+      counterColor += 1
+
+      ax.tick_params(axis='x', labelsize= dS)
+      ax.tick_params(axis='y', labelsize= dS)
+      ax.set_ylabel(AxisLabels_dict[colName],fontsize=dS)
+      ax.set_xlabel('Temperature',fontsize=dS)
+      if colName=='Nr_visited_states':
+        ax.set_ylim([0,10])
+      elif colName=='state 10':
+        ax.set_ylim([0,100])
+      else:
+        ax.set_ylim([0,20])
+
+
+
+
+  plt.subplots_adjust(left=0.1, 
+                      bottom=0.1,  
+                      right=0.9,  
+                      top=0.9,  
+                      wspace=0.3,  
+                      hspace=0) 
+    #figure.suptitle('Between temperatures generativity',fontsize=dS*3)
+
+  return results_mat
+
+
+def similarity_between_temperatures(model,sample_test_data,temperatures_for_comparisons, metric_type='cos', dS=30):
+
+  figure, axis = plt.subplots(1, 1, figsize=(15,15))
+  for t in temperatures_for_comparisons:
+    Average_metrics_plot(model, sample_test_data, temperature=t, new_generated_data=True, single_line_plot=False, metric_type=metric_type)
+  
+  if metric_type=='cos':
+    Y_lim = [0,1]
+    y_lbl = 'Cosine similarity'
+  elif metric_type == 'perc_act_H':
+    Y_lim = [0,100]
+    y_lbl = '% active H units'
+  else:
+    Y_lim = [-200,500]
+    y_lbl = 'Model energy'
+
+  axis.tick_params(axis='x', labelsize= dS)
+  axis.tick_params(axis='y', labelsize= dS)
+  axis.set_ylabel(y_lbl,fontsize=dS)
+  axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+  axis.set_title('Average '+y_lbl,fontsize=dS)
+  axis.set_ylim(Y_lim)
+  axis.legend(temperatures_for_comparisons, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) # legenda
