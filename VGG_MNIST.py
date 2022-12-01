@@ -161,7 +161,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,0].set_ylabel('Accuracy',fontsize=dS)
       axis[0,0].set_ylim([0,1])
       axis[0,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
-      axis[0,0].set_title('VGG accuracy',fontsize=dS)
+      axis[0,0].set_title('Classifier accuracy',fontsize=dS)
 
 
       axis[0,1].plot(x, MEAN_entropy, c = 'r', linewidth=l_sz)
@@ -187,7 +187,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[1,0].set_ylabel('Accuracy',fontsize=dS)
       axis[1,0].set_ylim([0,1])
       axis[1,0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
-      axis[1,0].set_title('VGG accuracy - digitwise',fontsize=dS)
+      axis[1,0].set_title('Classifier accuracy - digitwise',fontsize=dS)
         
       c=0
       for digit in range(model.Num_classes):
