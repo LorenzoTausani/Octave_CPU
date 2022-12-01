@@ -221,6 +221,8 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
     axis.set_title(y_lbl+' - digitwise',fontsize=dS)
     if metric_type=='cos':
       axis.set_ylim([0,1])
+    elif metric_type=='perc_act_H':
+      axis.set_ylim([0,100])
     #DA FARE SETTARE LIMITI ASSE Y
 
 
@@ -282,6 +284,7 @@ def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [
     SEM = (torch.std(torch.mean(gen_H,1)*100,0)/math.sqrt(gen_H.size()[0]))
     y_lbl = '% active H units'
 
+
   if not(metric_type=='cos'):
     SEM = SEM.cpu()
     x = range(1,nr_steps+1)
@@ -296,6 +299,9 @@ def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [
      axis.set_title('Average '+y_lbl,fontsize=dS)
      if metric_type=='cos':
         axis.set_ylim([0,1])
+     elif metric_type=='perc_act_H':
+        axis.set_ylim([0,100])
+
      plt.show()
 
 
