@@ -505,7 +505,7 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
     dict_VHstate_accuracy[VH_state]=acc_digitwise
     dict_VHstate_nrVisitedSts[VH_state]=df_average['Nr_visited_states'].to_numpy()
     dict_VHstate_nrTransitions[VH_state]=df_average['Nr_transitions'].to_numpy()
-    dict_VHstate_toNoNum[VH_state] =df_average['state 10'].to_numpy()
+    dict_VHstate_toNoNum[VH_state] =df_average['Non-digit'].to_numpy()
 
   if plot==1:
     between_VH_plots(dict_VHstate_accuracy)
@@ -563,8 +563,8 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
 
 def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_test_labels,type='sample_reconstruct', elements_of_interest = [1,7], t_beginning = 0.1,t_end = 2, t_step=0.1, consider_top_H=1000, plot = 'yes'):
   temperatures = np.arange(t_beginning, t_end, t_step)
-  variables_of_interest = ['Nr_visited_states', 'Nr_transitions','state 10'] #,'Ratio_2nd_trueClass'
-  AxisLabels_dict={'Nr_visited_states':'Nr of visited states', 'Nr_transitions': 'Nr of state transitions', 'state 10': 'Non-digit state time'}
+  variables_of_interest = ['Nr_visited_states', 'Nr_transitions','Non-digit'] #,'Ratio_2nd_trueClass'
+  AxisLabels_dict={'Nr_visited_states':'Nr of visited states', 'Nr_transitions': 'Nr of state transitions', 'Non-digit': 'Non-digit state time'}
   results_mat = np.zeros((len(temperatures),len(variables_of_interest)))  
   c=0
   for t in temperatures:
@@ -636,7 +636,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
       ax.set_xlabel('Temperature',fontsize=dS)
       if colName=='Nr_visited_states':
         ax.set_ylim([0,10])
-      elif colName=='state 10':
+      elif colName=='Non-digit':
         ax.set_ylim([0,100])
       else:
         ax.set_ylim([0,20])
