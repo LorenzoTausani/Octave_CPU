@@ -33,7 +33,7 @@ def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   axis.legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #imposto la legenda
   #setto i nomi degli assi e il titolo del plot
   axis.set_ylabel('Linear classifier accuracy',fontsize=dS)
-  axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+  axis.set_xlabel('Nr. of steps',fontsize=dS)
   axis.set_title('Classifier accuracy',fontsize=dS)
 
   #axis.set_xticks(np.arange(0, nr_steps+1, 1))
@@ -196,7 +196,7 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
     axis.tick_params(axis='x', labelsize= dS) 
     axis.tick_params(axis='y', labelsize= dS)
     axis.set_ylabel(y_lbl,fontsize=dS)
-    axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+    axis.set_xlabel('Nr. of steps',fontsize=dS)
     axis.set_title(y_lbl+' - digitwise',fontsize=dS)
     if metric_type=='cos':
       axis.set_ylim([0,1])
@@ -271,7 +271,7 @@ def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [
      axis.tick_params(axis='x', labelsize= dS)
      axis.tick_params(axis='y', labelsize= dS)
      axis.set_ylabel(y_lbl,fontsize=dS)
-     axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+     axis.set_xlabel('Nr. of steps',fontsize=dS)
      axis.set_title('Average '+y_lbl,fontsize=dS)
      if metric_type=='cos':
         axis.set_ylim([0,1])
@@ -326,7 +326,7 @@ def Cosine_hidden_plot(model,gen_data_dictionary, sample_test_labels, dS = 40, l
       else:
         axis[digit_plot].set_yticklabels([])
       axis[digit_plot].set_ylim([0,1])
-      axis[digit_plot].set_xlabel('Nr. steps',fontsize=dS)
+      axis[digit_plot].set_xlabel('Nr. of steps',fontsize=dS)
       axis[digit_plot].set_title("Digit: {}".format(digit_plot),fontsize=dS)  
 
         #da finire 05 07
@@ -353,14 +353,14 @@ def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model
   axis[0].set_ylabel('Label classification',fontsize=dS)
   axis[0].set_ylim([0,10])
   axis[0].set_yticks(range(0,11))
-  axis[0].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+  axis[0].set_xlabel('Nr. of steps',fontsize=dS)
 
   axis[1].plot(dict_classifier['Pred_entropy_mat'][img_idx[0],:], linewidth = lin_sz, c='r')
   axis[1].tick_params(axis='x', labelsize= dS)
   axis[1].tick_params(axis='y', labelsize= dS)
   axis[1].set_ylabel('Classification entropy',fontsize=dS)
   axis[1].set_ylim([0,2])
-  axis[1].set_xlabel('Nr. reconstruction steps',fontsize=dS)
+  axis[1].set_xlabel('Nr. of steps',fontsize=dS)
 
   plt.show()
 
