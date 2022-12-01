@@ -406,7 +406,7 @@ def between_VH_plots(dict_VH_LayerState_comparison,dS=23,yLab = 'Accuracy'):
     top=1
   elif yLab == 'Nr of transitions':
     bottom=0
-    top=15
+    top=20
   elif yLab == 'Nr steps in no digit state':
     bottom=0
     top=50
@@ -414,8 +414,6 @@ def between_VH_plots(dict_VH_LayerState_comparison,dS=23,yLab = 'Accuracy'):
     bottom=0
     top=5    
     
-    
-
 
   plt.ylabel(yLab, fontsize = dS)
   plt.tick_params('both',labelsize=dS)
@@ -457,6 +455,7 @@ def between_VH_plots(dict_VH_LayerState_comparison,dS=23,yLab = 'Accuracy'):
 
   plt.show()
 
+
 def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temperature,consider_top_H, VGG_cl, model, plot=1):
   '''
   #Se si vuole avere anche VbHc
@@ -467,7 +466,7 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
   VH_LayerStates=list(itertools.combinations_with_replacement(['continous','binary'],2))
   dict_VHstate_accuracy={}
   dict_VHstate_nrVisitedSts = {}
-  #dict_VHstate_nrTransitions={}
+  dict_VHstate_nrTransitions={}
   dict_VHstate_toNoNum={}
 
   for VH_state in VH_LayerStates:
@@ -476,31 +475,21 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
 
     d= model.reconstruct(sample_test_data, nr_steps, temperature=temperature,consider_top=consider_top_H)
     reconstructed_imgs=d['vis_states']
-    d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=sample_test_labels)
-    df_average,df_sem = classification_metrics(d_cl,model,sample_test_labels)
+    d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=sample_test_labels, plot=0)
+    df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,model,sample_test_labels, Plot=0)
 
     acc_digitwise=[]
     for idx in range(10):
       acc_digitwise.append(d_cl['digitwise_acc'][idx][-1])
     dict_VHstate_accuracy[VH_state]=acc_digitwise
     dict_VHstate_nrVisitedSts[VH_state]=df_average['Nr_visited_states'].to_numpy()
-    #dict_VHstate_nrTransitions[VH_state]=df_average['Nr_transitions'].to_numpy()
+    dict_VHstate_nrTransitions[VH_state]=df_average['Nr_transitions'].to_numpy()
     dict_VHstate_toNoNum[VH_state] =df_average['state 10'].to_numpy()
 
   if plot==1:
     between_VH_plots(dict_VHstate_accuracy)
     between_VH_plots(dict_VHstate_nrVisitedSts,yLab = 'Nr of visited states')
-    #between_VH_plots(dict_VHstate_nrTransitions,yLab = 'Nr of transitions')
+    between_VH_plots(dict_VHstate_nrTransitions,yLab = 'Nr of transitions')
     between_VH_plots(dict_VHstate_toNoNum,yLab = 'Nr steps in no digit state')
 
-  return dict_VHstate_accuracy, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
-
-
-
-
-
-
-
-
-
-
+  return dict_VHstate_nrTransitions, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
