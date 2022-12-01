@@ -363,7 +363,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         else:
           df_average.iloc[0:1].plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:,['Nr_visited_states', 'Nr_transitions']],xticks=[], figsize=(20,10),fontsize=dS)
           
-        plt.title("Classification_metrics-1",fontsize=dS)
+        #plt.title("Classification_metrics-1",fontsize=dS)
         
         plt.ylabel("Nr of states",fontsize=dS)
         plt.ylim([0,20])
@@ -375,7 +375,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         else:
           df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap='hsv',xticks=[])
 
-        plt.title("Classification_metrics-2",fontsize=dS)
+        #plt.title("Classification_metrics-2",fontsize=dS)
         
         plt.ylabel("Average number of steps",fontsize=dS)
         plt.ylim([0,100])
