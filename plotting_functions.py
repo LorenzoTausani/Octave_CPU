@@ -680,7 +680,7 @@ def similarity_between_temperatures(model,sample_test_data,temperatures_for_comp
   axis.tick_params(axis='x', labelsize= dS)
   axis.tick_params(axis='y', labelsize= dS)
   axis.set_ylabel(y_lbl,fontsize=dS)
-  axis.set_xlabel('Nr. reconstruction steps',fontsize=dS)
+  axis.set_xlabel('Nr. of steps',fontsize=dS)
   axis.set_title('Average '+y_lbl,fontsize=dS)
   axis.set_ylim(Y_lim)
   axis.legend(temperatures_for_comparisons, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) # legenda
