@@ -220,10 +220,10 @@ def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [
   
   if metric_type=='cos':
     if new_generated_data:
-        model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
+        MEAN, SEM = model.cosine_similarity(sample_test_data, result_dict['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
     else:
        #model.cosine_similarity(sample_test_data, model.TEST_vis_states, Plot=1, Color = C_list[0],Linewidth=l_sz) #old code
-       model.cosine_similarity(sample_test_data, gen_data_dictionary['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
+       MEAN, SEM = model.cosine_similarity(sample_test_data, gen_data_dictionary['vis_states'], Plot=1, Color = C_list[0],Linewidth=l_sz)
 
     y_lbl = 'Cosine similarity'
   elif metric_type=='energy':
