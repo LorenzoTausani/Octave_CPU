@@ -572,6 +572,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
   variables_of_interest = ['Nr_visited_states', 'Nr_transitions','Non-digit'] #,'Ratio_2nd_trueClass'
   AxisLabels_dict={'Nr_visited_states':'Nr of visited states', 'Nr_transitions': 'Nr of state transitions', 'Non-digit': 'Non-digit state time'}
   results_mat = np.zeros((len(temperatures),len(variables_of_interest)))  
+  err_mat = np.zeros((len(temperatures),len(variables_of_interest)))
   c=0
   for t in temperatures:
     if not(type=='chimera'):
@@ -579,7 +580,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
         d= model.reconstruct(sample_test_data, 100, temperature=t, consider_top=consider_top_H)
         reconstructed_imgs=d['vis_states']
         d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=sample_test_labels, plot=0)
-        df_average,df_sem = classification_metrics(d_cl,model,sample_test_labels, Plot=0) 
+        df_average,df_sem, T_mat = classification_metrics(d_cl,model,sample_test_labels, Plot=0) 
 
       elif type=='label biasing':
         vis_lbl_bias, gen_hidden_act=model.label_biasing(nr_steps=100)
@@ -595,7 +596,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
         VStack_labels=torch.tensor(range(10), device = 'cuda')
         VStack_labels=VStack_labels.repeat(100)
         d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=VStack_labels, plot=0)
-        df_average,df_sem = classification_metrics(d_cl,model,VStack_labels, Plot=0)
+        df_average,df_sem,T_mat = classification_metrics(d_cl,model,VStack_labels, Plot=0)
 
       elif type=='avg hidden biasing':
         Avg_hid_digits = mean_h_prior(model)[:10,:,:]
@@ -611,17 +612,25 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
         VStack_labels=torch.tensor(range(10), device = 'cuda')
         VStack_labels=VStack_labels.repeat(100)
         d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, model, labels=VStack_labels, plot=0)
-        df_average,df_sem = classification_metrics(d_cl,model,VStack_labels, Plot=0)
+        df_average,df_sem,T_mat = classification_metrics(d_cl,model,VStack_labels, Plot=0)
 
 
     elif type=='chimera':
       #d, df_average = Ian.generate_chimera_lbl_biasing(VGG_cl, elements_of_interest = elements_of_interest, nr_of_examples = sample_test_labels.size()[0], temperature = t)
       d, df_average, df_sem = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = elements_of_interest, nr_of_examples = 1000, temperature = t)
     m = df_average[variables_of_interest].mean()
+    var_idx_count = 0
+    for var in variables_of_interest:
+      err_mat[c,var_idx_count]=error_propagation(df_average[var], df_sem[var], operation = 'average')
+      var_idx_count +=1
+
+
     results_mat[c,:] = m.to_numpy()
+
     c+=1
 
   results_mat = pd.DataFrame(results_mat, columns = variables_of_interest)
+  err_mat = pd.DataFrame(err_mat, columns = variables_of_interest)
 
   #results_mat['temperature'] = temperatures
 
@@ -633,7 +642,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
 
     for colName, ax in zip(results_mat, axis.ravel()):
 
-      ax.plot(temperatures, results_mat[colName],linewidth = '2.5',marker='o', c=C_list[counterColor])
+      ax.errorbar(temperatures, results_mat[colName], yerr=err_mat[colName],linewidth = 2.5 ,marker='o', c=C_list[counterColor])
       counterColor += 1
 
       ax.tick_params(axis='x', labelsize= dS)
@@ -658,7 +667,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
                       hspace=0) 
     #figure.suptitle('Between temperatures generativity',fontsize=dS*3)
 
-  return results_mat
+  return results_mat, err_mat
 
 
 def similarity_between_temperatures(model,sample_test_data,temperatures_for_comparisons, metric_type='cos', dS=30):
