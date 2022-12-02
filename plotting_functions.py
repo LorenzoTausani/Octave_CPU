@@ -684,3 +684,28 @@ def similarity_between_temperatures(model,sample_test_data,temperatures_for_comp
   axis.set_title('Average '+y_lbl,fontsize=dS)
   axis.set_ylim(Y_lim)
   axis.legend(temperatures_for_comparisons, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) # legenda
+
+def plot_intersect_count(df_digit_digit_common_elements_count_biasing):
+
+  fig, ax = plt.subplots(figsize=(10,10))
+
+  # hide axes
+  fig.patch.set_visible(False)
+  ax.axis('off')
+  plt.axis(on=None)
+  ax.axis('tight')
+  rcolors = plt.cm.BuPu(np.full(len(df_digit_digit_common_elements_count_biasing.columns), 0.1))
+  colV = []
+  for digit in range(10):
+    colV.append('Digit: '+str(digit))
+  table = ax.table(cellText=df_digit_digit_common_elements_count_biasing.values, colLabels=colV,
+          rowLabels=colV, rowColours=rcolors, rowLoc='right',
+                        colColours=rcolors, loc='center', fontsize=20)
+
+  fig.tight_layout()
+
+  from matplotlib.font_manager import FontProperties
+
+  for (row, col), cell in table.get_celld().items():
+    if (row == 0) or (col == -1):
+      cell.set_text_props(fontproperties=FontProperties(weight='bold'))
