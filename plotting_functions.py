@@ -376,7 +376,7 @@ def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model
   figure, axis = plt.subplots(2, figsize=(15,30))
   
 
-  axis[0].plot(dict_classifier['Cl_pred_matrix'][img_idx[0],:], linewidth = lin_sz)
+  axis[0].plot(dict_classifier['Cl_pred_matrix'].cpu()[img_idx[0],:], linewidth = lin_sz)
 
   axis[0].tick_params(axis='x', labelsize= dS)
   axis[0].tick_params(axis='y', labelsize= dS)
@@ -385,7 +385,7 @@ def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model
   axis[0].set_yticks(range(0,11))
   axis[0].set_xlabel('Nr. of steps',fontsize=dS)
 
-  axis[1].plot(dict_classifier['Pred_entropy_mat'][img_idx[0],:], linewidth = lin_sz, c='r')
+  axis[1].plot(dict_classifier['Pred_entropy_mat'].cpu()[img_idx[0],:], linewidth = lin_sz, c='r')
   axis[1].tick_params(axis='x', labelsize= dS)
   axis[1].tick_params(axis='y', labelsize= dS)
   axis[1].set_ylabel('Classification entropy',fontsize=dS)
@@ -393,6 +393,7 @@ def single_digit_classification_plots(reconstructed_imgs, dict_classifier, model
   axis[1].set_xlabel('Nr. of steps',fontsize=dS)
 
   plt.show()
+
 
 def between_VH_plots(dict_VH_LayerState_comparison,dS=23,yLab = 'Accuracy'):
   #pairwise stat tests
