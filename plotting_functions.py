@@ -98,15 +98,15 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         
         if  d_type=='example' or d_type=='lbl_biasing':
             before = 1 # perchè c'è anche il plot dell'originale/biasing
+            axis[0, lbl].tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
             # plotto l'originale (i.e. non ricostruito)
             if d_type=='example': #differenzio tra example e biasing perchè diverso è il tipo di dato in input
               axis[0, lbl].imshow(orig_data.data[good_digits_idx[lbl]] , cmap = 'gray')
               axis[0, lbl].set_title("Original number:{}".format(lbl))
             else:
               axis[0, lbl].imshow(orig_data[lbl,:,:].cpu() , cmap = 'gray')
-              axis[0, lbl].set_title("lbl biasing number:{}".format(lbl))
-            axis[0, lbl].set_xticklabels([])
-            axis[0, lbl].set_yticklabels([])
+              axis[0, lbl].set_title("Biasing digit:{}".format(lbl))
             axis[0, lbl].set_aspect('equal')
 
         else:
@@ -115,9 +115,10 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         # plotto la ricostruzione dopo uno step
         reconstructed_img= input_data[lbl,:,0] #estraggo la prima immagine ricostruita per il particolare esempio (lbl può essere un nome un po fuorviante)
         reconstructed_img = reconstructed_img.view((28,28)).cpu() #ridimensiono l'immagine e muovo su CPU
-
+        axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
+            labelbottom = False, bottom = False)
         axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
-        axis[before, lbl].set_title("Rec.-step {}".format(1))
+        axis[before, lbl].set_title("Step {}".format(1))
         axis[before, lbl].set_xticklabels([])
         axis[before, lbl].set_yticklabels([])
         axis[before, lbl].set_aspect('equal')
@@ -128,8 +129,10 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
             #plotto la ricostruzione
             reconstructed_img= input_data[lbl,:,step-1] #step-1 perchè 0 è la prima ricostruzione
             reconstructed_img = reconstructed_img.view((28,28)).cpu()
+            axis[idx, lbl].tick_params(left = False, right = False , labelleft = False ,
+            labelbottom = False, bottom = False)
             axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')
-            axis[idx, lbl].set_title("Rec.-step {}".format(step))
+            axis[idx, lbl].set_title("Step {}".format(step))
             axis[idx, lbl].set_xticklabels([])
             axis[idx, lbl].set_yticklabels([])
             axis[idx, lbl].set_aspect('equal')
