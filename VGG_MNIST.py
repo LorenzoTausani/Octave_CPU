@@ -93,11 +93,11 @@ class VGG16(nn.Module):
 
 def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
-  Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2])
-  Pred_entropy_mat = torch.zeros(input_data.size()[0],input_data.size()[2])
-  digitwise_acc = torch.zeros(model.Num_classes,input_data.size()[2])
-  digitwise_avg_entropy = torch.zeros(model.Num_classes,input_data.size()[2])
-  digitwise_sem_entropy = torch.zeros(model.Num_classes,input_data.size()[2])
+  Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
+  Pred_entropy_mat = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
+  digitwise_acc = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
+  digitwise_avg_entropy = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
+  digitwise_sem_entropy = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
   acc = torch.zeros(input_data.size()[2])
   if labels==[]:
     labels = torch.zeros(input_data.size()[0]).to(model.DEVICE)
@@ -165,8 +165,8 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       axis[0,0].set_title('Classifier accuracy',fontsize=dS)
 
 
-      axis[0,1].plot(x, MEAN_entropy, c = 'r', linewidth=l_sz)
-      axis[0,1].fill_between(x,MEAN_entropy-SEM_entropy, MEAN_entropy+SEM_entropy, color='r',
+      axis[0,1].plot(x, MEAN_entropy.cpu(), c = 'r', linewidth=l_sz)
+      axis[0,1].fill_between(x,MEAN_entropy.cpu()-SEM_entropy.cpu(), MEAN_entropy.cpu()+SEM_entropy.cpu(), color='r',
                       alpha=0.3)
         
       axis[0,1].tick_params(axis='x', labelsize= dS)
