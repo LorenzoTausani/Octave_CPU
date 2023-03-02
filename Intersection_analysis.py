@@ -129,5 +129,5 @@ class Intersection_analysis:
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
-      return d, df_average,df_sem
+      return d, df_average,df_sem, Transition_matrix_rowNorm
 
