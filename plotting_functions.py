@@ -62,7 +62,7 @@ def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   plt.show()
 
 
-def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example', consider_top = 1000):
+def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example', consider_top = 1000, dS=20):
     '''
     INPUT: 
     input_data: possono essere o dataset da ricostruire (in tal caso d_type='example'), o visible ottenuti da label biasing (in tal caso d_type='lbl_biasing')
@@ -84,12 +84,13 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
 
     else: # nel caso di reconstruct examples o label biasing
         cols = model.Num_classes #le colonne sono 10 in quanto 10 sono i digits
-        figure, axis = plt.subplots(rows+2, cols, figsize=(25,2.5*(2+rows))) # 2 sta per originale+ 1 step reconstruction, che ci sono sempre 
         good_digits_idx = [71,5,82,32,56,15,21,64,110,58] #bei digits selezionati manualmente da me (per example)
         if d_type=='example':
+          figure, axis = plt.subplots(rows+2, cols, figsize=(25,2.5*(2+rows))) # 2 sta per originale+ 1 step reconstruction, che ci sono sempre 
           orig_data = input_data # copio in questo modo per poi ottenere agilmente i dati originali
           d= model.reconstruct(input_data.data[good_digits_idx].to(model.DEVICE),nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         else:
+          figure, axis = plt.subplots(rows+1,cols, figsize=(25,2.5*(1+rows)))
           orig_data = input_data.view((10,28,28))
           d= model.reconstruct(orig_data,nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         input_data=d['vis_states'] #estraggo le immagini ricostruite
@@ -97,31 +98,35 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
     for lbl in range(cols): #per ogni digit...
         
         if  d_type=='example' or d_type=='lbl_biasing':
-            before = 1 # perchè c'è anche il plot dell'originale/biasing
-            axis[0, lbl].tick_params(left = False, right = False , labelleft = False ,
+            
+            axis[0, lbl].tick_params(left = False, right = False, labelleft = False ,
                 labelbottom = False, bottom = False)
             # plotto l'originale (i.e. non ricostruito)
             if d_type=='example': #differenzio tra example e biasing perchè diverso è il tipo di dato in input
+              before = 1 # perchè c'è anche il plot dell'originale
               axis[0, lbl].imshow(orig_data.data[good_digits_idx[lbl]] , cmap = 'gray')
               axis[0, lbl].set_title("Original number:{}".format(lbl))
             else:
               axis[0, lbl].imshow(orig_data[lbl,:,:].cpu() , cmap = 'gray')
-              axis[0, lbl].set_title("Biasing digit:{}".format(lbl))
+              #axis[0, lbl].set_title("Biasing digit:{}".format(lbl))
+              axis[0, lbl].set_title("Step 1", fontsize=dS)
+              before = 0
             axis[0, lbl].set_aspect('equal')
 
         else:
             before = 0 # non ho il plot dell'originale
 
         # plotto la ricostruzione dopo uno step
-        reconstructed_img= input_data[lbl,:,0] #estraggo la prima immagine ricostruita per il particolare esempio (lbl può essere un nome un po fuorviante)
-        reconstructed_img = reconstructed_img.view((28,28)).cpu() #ridimensiono l'immagine e muovo su CPU
-        axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
-            labelbottom = False, bottom = False)
-        axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
-        axis[before, lbl].set_title("Step {}".format(1))
-        axis[before, lbl].set_xticklabels([])
-        axis[before, lbl].set_yticklabels([])
-        axis[before, lbl].set_aspect('equal')
+        if not(d_type=='lbl_biasing'):
+          reconstructed_img= input_data[lbl,:,0] #estraggo la prima immagine ricostruita per il particolare esempio (lbl può essere un nome un po fuorviante)
+          reconstructed_img = reconstructed_img.view((28,28)).cpu() #ridimensiono l'immagine e muovo su CPU
+          axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
+              labelbottom = False, bottom = False)
+          axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
+          axis[before, lbl].set_title("Step {}".format(1))
+          axis[before, lbl].set_xticklabels([])
+          axis[before, lbl].set_yticklabels([])
+          axis[before, lbl].set_aspect('equal')
  
         for idx,step in enumerate(range(row_step,nr_steps+1,row_step)): # idx = riga dove plotterò, step è il recostruction step che ci plotto
             idx = idx+before+1 #sempre +1 perchè c'è sempre 1 step reconstruction (+1 se before=1 perchè c'è anche l'originale)
@@ -132,7 +137,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
             axis[idx, lbl].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
             axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')
-            axis[idx, lbl].set_title("Step {}".format(step))
+            axis[idx, lbl].set_title("Step {}".format(step) , fontsize=dS)
             axis[idx, lbl].set_xticklabels([])
             axis[idx, lbl].set_yticklabels([])
             axis[idx, lbl].set_aspect('equal')
