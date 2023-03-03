@@ -384,18 +384,17 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
      df_sem = df_sem.iloc[0]
   '''
   if Plot==1:
-
         if test_labels!=[]:
-          df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(20,10),fontsize=dS)
+          df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(30,10),fontsize=dS)
           plt.xlabel("Digit",fontsize=dS)
         else:
           df_average.iloc[0:1].plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:,['Nr_visited_states', 'Nr_transitions']],xticks=[], figsize=(20,10),fontsize=dS)
           
         #plt.title("Classification_metrics-1",fontsize=dS)
         
-        plt.ylabel("Nr of states",fontsize=dS)
+        plt.ylabel("Number of states",fontsize=dS)
         plt.ylim([0,10])
-        plt.legend(bbox_to_anchor=(0.64,1), loc="upper left", fontsize=dS)
+        plt.legend(["Visited states", "Transitions"], bbox_to_anchor=(0.73,1), loc="upper left", fontsize=dS-15)
 
         cmap = cm.get_cmap('hsv')
         newcolors = cmap(np.linspace(0, 1, 256))
