@@ -374,7 +374,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         #plt.title("Classification_metrics-1",fontsize=dS)
         
         plt.ylabel("Nr of states",fontsize=dS)
-        plt.ylim([0,20])
+        plt.ylim([0,10])
         plt.legend(bbox_to_anchor=(0.64,1), loc="upper left", fontsize=dS)
 
         cmap = cm.get_cmap('hsv')
