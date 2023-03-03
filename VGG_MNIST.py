@@ -92,6 +92,7 @@ class VGG16(nn.Module):
 
 
 def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
+  #plot = 2 -> only digitwise accuracy
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
   Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
   Pred_entropy_mat = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
@@ -214,8 +215,27 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
                         top=0.9,  
                         wspace=0.4,  
                         hspace=0.4) 
+  elif plot==2:
+      c=0
+      cmap = cm.get_cmap('hsv')
+      lbls = range(model.Num_classes)
+      figure, axis = plt.subplots(1, 1, figsize=(15,15))
+      x = range(1,input_data.size()[2]+1)
 
-
+      for digit in range(model.Num_classes):
+        Color = cmap(c/256) 
+        MEAN = digitwise_acc[digit,:].cpu()
+        axis.plot(x, MEAN, c = Color, linewidth=l_sz)
+        c = c+25
+      
+      #axis[1,0].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
+      axis.tick_params(axis='x', labelsize= dS)
+      axis.tick_params(axis='y', labelsize= dS)
+      axis.set_ylabel('Accuracy',fontsize=dS)
+      axis.set_ylim([0,1])
+      axis.set_xlabel('Generation step',fontsize=dS)
+      axis.set_title('Classifier accuracy',fontsize=dS)
+     
 
   result_dict = dict(); 
   result_dict['Cl_pred_matrix'] = Cl_pred_matrix
