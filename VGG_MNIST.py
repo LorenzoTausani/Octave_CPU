@@ -391,7 +391,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         
         plt.ylabel("Number of states",fontsize=dS)
         plt.ylim([0,10])
-        plt.legend(["Visited states", "Transitions"], bbox_to_anchor=(0.73,1), loc="upper left", fontsize=dS-15)
+        plt.legend(["Visited states", "Transitions"], bbox_to_anchor=(0.73,1), loc="upper left", fontsize=dS-dS/3)
         
 
         '''
@@ -428,15 +428,15 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         Trans_nr_err = Trans_nr_err.round(rounding)
         Trans_nr_err = np.array(Trans_nr_err)
 
-        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2, lS=18)
+        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18)
 
         #plot of the transition matrix
         Transition_mat_plot(Transition_matrix_rowNorm, lS=20)
-        
+
   return df_average, df_sem, Transition_matrix_rowNorm
 
 
-def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2, lS=18):
+def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
 
 
         plt.figure(figsize=(15, 15))
@@ -462,7 +462,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2, lS=18):
         plt.show()
 
 
-def Transition_mat_plot(Transition_matrix_rowNorm, lS=20):
+def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=20):
       plt.figure(figsize=(15, 15))
       Transition_matrix=Transition_matrix_rowNorm*100
       ax = sns.heatmap(torch.round(Transition_matrix, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f')
