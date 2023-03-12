@@ -374,8 +374,6 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
 
     df_average['Ratio_2nd_trueClass'] = ratio_list
     df_sem['Ratio_2nd_trueClass'] = ratio_propErr
-
-
     
   '''
   else:
@@ -419,6 +417,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         '''
 
         #NEW PLOT(PER BRAIN INFORMATICS)
+        lS=18
         Trans_nr = df_average.iloc[:, 2:-1]
         Trans_nr = Trans_nr.apply(pd.to_numeric)
         Trans_nr = Trans_nr.round(rounding)
@@ -429,15 +428,15 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         Trans_nr_err = Trans_nr_err.round(rounding)
         Trans_nr_err = np.array(Trans_nr_err)
 
-        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2)
+        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2, lS=18)
 
         #plot of the transition matrix
+        Transition_mat_plot(Transition_matrix_rowNorm, lS=20)
         
-
   return df_average, df_sem, Transition_matrix_rowNorm
 
 
-def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2):
+def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2, lS=18):
 
 
         plt.figure(figsize=(15, 15))
@@ -446,7 +445,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2):
            T_mat_labels = ['0','1','2','3','4','5','6','7','8','9','Non digit']
 
         ax.set_xticklabels(T_mat_labels)
-        ax.tick_params(axis='both', labelsize=20)
+        ax.tick_params(axis='both', labelsize=lS)
 
 
         for i in range(Trans_nr.shape[0]):
@@ -459,5 +458,22 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2):
         plt.xlabel('Digit state', fontsize = 25) # x-axis label with fontsize 15
         plt.ylabel('Biasing digit', fontsize = 25) # y-axis label with fontsize 15
         cbar = ax.collections[0].colorbar
-        cbar.ax.tick_params(labelsize=20)
+        cbar.ax.tick_params(labelsize=lS)
         plt.show()
+
+
+def Transition_mat_plot(Transition_matrix_rowNorm, lS=20):
+      plt.figure(figsize=(15, 15))
+      Transition_matrix=Transition_matrix_rowNorm*100
+      ax = sns.heatmap(torch.round(Transition_matrix, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f')
+      plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
+      plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
+      if T_mat_labels==[]:
+          T_mat_labels = ['0','1','2','3','4','5','6','7','8','9','Non digit']
+      ax.set_xticklabels(T_mat_labels)
+      ax.set_yticklabels(T_mat_labels)
+      ax.tick_params(axis='both', labelsize=lS)
+      cbar = ax.collections[0].colorbar
+      cbar.ax.tick_params(labelsize=lS)
+
+      plt.show()
