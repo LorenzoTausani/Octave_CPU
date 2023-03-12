@@ -247,8 +247,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
   return result_dict
 
 
-
-def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30):
+def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30, rounding=2, T_mat_labels=[]):
   '''
   dict_classifier: dizionario del classificatore, con dentro, tra le altre cose, le predizioni del classificatore
   model = la nostra RBM
@@ -395,7 +394,11 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.ylabel("Number of states",fontsize=dS)
         plt.ylim([0,10])
         plt.legend(["Visited states", "Transitions"], bbox_to_anchor=(0.73,1), loc="upper left", fontsize=dS-15)
+        
 
+        '''
+        OLD PLOT: AVERAGE STATES VISITED BEGINNING FROM A CERTAIN LABEL BIASING DIGIT
+        QUESTO è IL PLOT MOSTRATO IN TESI
         cmap = cm.get_cmap('hsv')
         newcolors = cmap(np.linspace(0, 1, 256))
         black = np.array([0.1, 0.1, 0.1, 1])
@@ -413,5 +416,48 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.ylabel("Average nr of steps",fontsize=dS)
         plt.ylim([0,100])
         plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
+        '''
+
+        #NEW PLOT(PER BRAIN INFORMATICS)
+        Trans_nr = df_average.iloc[:, 2:-1]
+        Trans_nr = Trans_nr.apply(pd.to_numeric)
+        Trans_nr = Trans_nr.round(rounding)
+        Trans_nr = np.array(Trans_nr)
+
+        Trans_nr_err = df_sem.iloc[:, 2:-1]
+        Trans_nr_err = Trans_nr_err.apply(pd.to_numeric)
+        Trans_nr_err = Trans_nr_err.round(rounding)
+        Trans_nr_err = np.array(Trans_nr_err)
+
+        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2)
+
+        #plot of the transition matrix
+        
 
   return df_average, df_sem, Transition_matrix_rowNorm
+
+
+def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=2):
+
+
+        plt.figure(figsize=(15, 15))
+        ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82})
+        if T_mat_labels==[]:
+           T_mat_labels = ['0','1','2','3','4','5','6','7','8','9','Non digit']
+
+        ax.set_xticklabels(T_mat_labels)
+        ax.tick_params(axis='both', labelsize=20)
+
+
+        for i in range(Trans_nr.shape[0]):
+            for j in range(Trans_nr.shape[1]):
+                value = Trans_nr[i, j]
+                error = Trans_nr_err[i, j]
+                ax.annotate(f'{value:.{rounding}f} \n ±{error:.{rounding}f}', xy=(j+0.5, i+0.5), 
+                            ha='center', va='center', color='white', fontsize=20)
+
+        plt.xlabel('Digit state', fontsize = 25) # x-axis label with fontsize 15
+        plt.ylabel('Biasing digit', fontsize = 25) # y-axis label with fontsize 15
+        cbar = ax.collections[0].colorbar
+        cbar.ax.tick_params(labelsize=20)
+        plt.show()
