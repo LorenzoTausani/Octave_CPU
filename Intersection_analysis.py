@@ -103,7 +103,7 @@ class Intersection_analysis:
 
 
 
-    def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000):
+    def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000, plot=0):
       b_vec =torch.zeros(nr_of_examples,1000)
       if not(elements_of_interest =='rand'):
         dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
@@ -123,8 +123,8 @@ class Intersection_analysis:
 
       
       reconstructed_imgs=d['vis_states']
-      d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, self.model, plot=0)
-      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,self.model, Plot=0)
+      d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, self.model, plot=plot)
+      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,self.model, Plot=plot)
       
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
