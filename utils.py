@@ -7,6 +7,7 @@ import os
 import numpy as np
 import math
 from DBN import DBN
+from google.colab import files
 
 def load_MNIST_data(DEVICE):
     
@@ -237,3 +238,13 @@ def error_propagation(measures, measures_error, operation = 'average'):
   
 
   return propagated_err
+
+
+def save_mat_xlsx(my_array, filename='my_res.xlsx'):
+    # create a pandas dataframe from the numpy array
+    my_dataframe = pd.DataFrame(my_array)
+
+    # save the dataframe as an excel file
+    my_dataframe.to_excel(filename, index=False)
+    # download the file
+    files.download(filename)
