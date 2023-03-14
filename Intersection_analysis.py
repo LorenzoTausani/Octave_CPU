@@ -131,7 +131,7 @@ class Intersection_analysis:
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
-      return d, df_average,df_sem, Transition_matrix_rowNorm
+      return d, d_cl, df_average,df_sem, Transition_matrix_rowNorm
 
 def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1):
     n_digits = Ian.model.Num_classes

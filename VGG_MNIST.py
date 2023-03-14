@@ -91,7 +91,7 @@ class VGG16(nn.Module):
     return x
 
 
-def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
+def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=1, plot=1, dS=30, l_sz=3):
   #plot = 2 -> only digitwise accuracy
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
   Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
@@ -147,6 +147,23 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
   MEAN_entropy = torch.mean(Pred_entropy_mat,0)
   SEM_entropy = torch.std(Pred_entropy_mat,0)/math.sqrt(input_data.size()[0])
 
+  if entropy_correction==1:
+     Entropy_mat_NN = Pred_entropy_mat[Cl_pred_matrix==10]
+     NN_mean_entropy = Entropy_mat_NN.mean()
+     Cl_pred_matrix[Pred_entropy_mat>=NN_mean_entropy]=10
+
+     Lab_mat= labels.unsqueeze(1).expand(len(labels), input_data.size()[2])
+
+     Cl_acc = Cl_pred_matrix==Lab_mat
+     Cl_acc = Cl_acc.to(torch.float)
+     acc =Cl_acc.mean(dim=0)
+     
+     for digit in range(model.Num_classes):
+        digit_idxs = labels==digit
+        a = Cl_pred_matrix[digit_idxs,:]==Lab_mat[digit_idxs,:]
+        a = a.to(torch.float)
+        digitwise_acc[digit,:]=a.mean(dim=0)     
+
 
   if plot == 1:
       c=0
@@ -156,7 +173,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, plot
       figure, axis = plt.subplots(2, 2, figsize=(20,15))
       x = range(1,input_data.size()[2]+1)
 
-      axis[0,0].plot(x, acc, c = 'g', linewidth=l_sz)
+      axis[0,0].plot(x, acc.cpu(), c = 'g', linewidth=l_sz)
         
       axis[0,0].tick_params(axis='x', labelsize= dS)
       axis[0,0].tick_params(axis='y', labelsize= dS)

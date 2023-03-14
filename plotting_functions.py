@@ -123,7 +123,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
           axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
               labelbottom = False, bottom = False)
           axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
-          axis[before, lbl].set_title("Step {}".format(1))
+          axis[before, lbl].set_title("Step {}".format(1), fontsize=dS)
           axis[before, lbl].set_xticklabels([])
           axis[before, lbl].set_yticklabels([])
           axis[before, lbl].set_aspect('equal')
