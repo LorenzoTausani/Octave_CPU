@@ -5,6 +5,7 @@ import plotting_functions
 from VGG_MNIST import *
 from plotting_functions import *
 from google.colab import files
+import pandas as pd
 
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
@@ -132,20 +133,10 @@ class Intersection_analysis:
       
       return d, df_average,df_sem, Transition_matrix_rowNorm
 
-def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1):
+def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1):
     n_digits = Ian.model.Num_classes
-    Vis_states_mat = np.zeros((n_digits, n_digits))
-    Vis_states_err = np.zeros((n_digits, n_digits))
-
-    for row in range(n_digits):
-      for col in range(row,n_digits):
-        d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = 1000, temperature = 1, plot=0)
-        Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
-        Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
-    
     fN='Visited_digits_k' + str(Ian.top_k_Hidden)+'.xlsx'
     fNerr='Visited_digits_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
-
     def save_mat_xlsx(my_array, filename='my_res.xlsx'):
         # create a pandas dataframe from the numpy array
         my_dataframe = pd.DataFrame(my_array)
@@ -155,8 +146,28 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1):
         # download the file
         files.download(filename)
 
-    save_mat_xlsx(Vis_states_mat, filename=fN)
-    save_mat_xlsx(Vis_states_err, filename=fNerr)
+    if compute_new==1:
+      Vis_states_mat = np.zeros((n_digits, n_digits))
+      Vis_states_err = np.zeros((n_digits, n_digits))
+
+      for row in range(n_digits):
+        for col in range(row,n_digits):
+          d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = 1000, temperature = 1, plot=0)
+          Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
+          Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
+
+      save_mat_xlsx(Vis_states_mat, filename=fN)
+      save_mat_xlsx(Vis_states_err, filename=fNerr)
+
+    else: #load already computed Vis_states_mat
+      Vis_states_mat = pd.read_excel(fN)
+      # Convert the DataFrame to a NumPy array
+      Vis_states_mat = Vis_states_mat.values
+
+      Vis_states_err = pd.read_excel(fNerr)
+      # Convert the DataFrame to a NumPy array
+      Vis_states_err = Vis_states_err.values
+
     if plot==1:
 
       Vis_states_mat = Vis_states_mat.round(apprx)
