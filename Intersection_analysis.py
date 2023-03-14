@@ -4,6 +4,7 @@ import VGG_MNIST
 import plotting_functions
 from VGG_MNIST import *
 from plotting_functions import *
+from google.colab import files
 
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
@@ -131,3 +132,53 @@ class Intersection_analysis:
       
       return d, df_average,df_sem, Transition_matrix_rowNorm
 
+def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1):
+    n_digits = Ian.model.Num_classes
+    Vis_states_mat = np.zeros((n_digits, n_digits))
+    Vis_states_err = np.zeros((n_digits, n_digits))
+
+    for row in range(n_digits):
+      for col in range(row,n_digits):
+        d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = 1000, temperature = 1, plot=0)
+        Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
+        Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
+    
+    fN='Visited_digits_k' + str(Ian.top_k_Hidden)+'.xlsx'
+    fNerr='Visited_digits_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
+
+    def save_mat_xlsx(my_array, filename='my_res.xlsx'):
+        # create a pandas dataframe from the numpy array
+        my_dataframe = pd.DataFrame(my_array)
+
+        # save the dataframe as an excel file
+        my_dataframe.to_excel(filename, index=False)
+        # download the file
+        files.download(filename)
+
+    save_mat_xlsx(Vis_states_mat, filename=fN)
+    save_mat_xlsx(Vis_states_err, filename=fNerr)
+    if plot==1:
+
+      Vis_states_mat = Vis_states_mat.round(apprx)
+      Vis_states_err = Vis_states_err.round(apprx)
+
+      plt.figure(figsize=(15, 15))
+      mask = np.triu(np.ones_like(Vis_states_mat))
+      # Set the lower triangle to NaN
+      Vis_states_mat = np.where(mask==0, np.nan, Vis_states_mat)
+      ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82})
+      #ax.set_xticklabels(T_mat_labels)
+      ax.tick_params(axis='both', labelsize=20)
+
+      for i in range(n_digits):
+          for j in range(n_digits):
+              value = Vis_states_mat[i, j]
+              error = Vis_states_err[i, j]
+              ax.annotate(f'{value:.2f} \n ±{error:.2f}', xy=(j+0.5, i+0.5), 
+                          ha='center', va='center', color='white', fontsize=20)
+
+      plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
+      plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
+      cbar = ax.collections[0].colorbar
+      cbar.ax.tick_params(labelsize=20)
+      plt.show()
