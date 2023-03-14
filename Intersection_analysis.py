@@ -182,3 +182,5 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1):
       cbar = ax.collections[0].colorbar
       cbar.ax.tick_params(labelsize=20)
       plt.show()
+
+    return Vis_states_mat, Vis_states_err
