@@ -727,3 +727,22 @@ def plot_intersect_count(df_digit_digit_common_elements_count_biasing):
   for (row, col), cell in table.get_celld().items():
     if (row == 0) or (col == -1):
       cell.set_text_props(fontproperties=FontProperties(weight='bold'))
+
+
+def top_k_generation(VGG_cl, model,n_rep=100, nr_steps=100, temperature=1, k=100, entropy_correction=1):
+  vis_lbl_bias, gen_hidden_act=model.label_biasing(nr_steps=nr_steps)
+  #processing of lbl biasing vec for reconstruct from hidden
+  gen_hidden_act = torch.transpose(gen_hidden_act, 0,1)
+  gen_hidden_act = gen_hidden_act.repeat(100, 1)
+  gen_hidden_act = torch.unsqueeze(gen_hidden_act, 2)
+
+  #do the reconstruction from label biasing vector with k units active
+  d = model.reconstruct_from_hidden(gen_hidden_act , nr_steps=nr_steps, temperature=temperature, include_energy = 1,consider_top=k)
+
+  #compute classifier accuracy and entropy
+  LblBiasGenerated_imgs=d['vis_states']
+  VStack_labels=torch.tensor(range(10), device = 'cuda')
+  VStack_labels=VStack_labels.repeat(100)
+  d_cl = Classifier_accuracy(LblBiasGenerated_imgs, VGG_cl, model, labels=VStack_labels, entropy_correction=entropy_correction, plot=0)
+
+  return d_cl['Cl_accuracy'][-1],d_cl['MEAN_entropy'][-1]

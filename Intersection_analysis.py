@@ -152,7 +152,7 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1):
 
       for row in range(n_digits):
         for col in range(row,n_digits):
-          d, d_cl,df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = 1000, temperature = 1, plot=0)
+          d, d_cl, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = 1000, temperature = 1, plot=0)
           Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
           Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
 
