@@ -150,7 +150,8 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
   if entropy_correction==1:
      Entropy_mat_NN = Pred_entropy_mat[Cl_pred_matrix==10]
      NN_mean_entropy = Entropy_mat_NN.mean()
-     Cl_pred_matrix[Pred_entropy_mat>=NN_mean_entropy]=10
+     NN_std_entropy = Entropy_mat_NN.std()
+     Cl_pred_matrix[Pred_entropy_mat>=(NN_mean_entropy-NN_std_entropy)]=10
 
      Lab_mat= labels.unsqueeze(1).expand(len(labels), input_data.size()[2])
 
@@ -262,7 +263,6 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
   result_dict['MEAN_entropy'] = MEAN_entropy
    
   return result_dict
-
 
 def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30, rounding=2, T_mat_labels=[]):
   '''
