@@ -208,6 +208,8 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
   result_dict['digitwise_acc'] = digitwise_acc
   result_dict['Pred_entropy_mat'] = Pred_entropy_mat
   result_dict['MEAN_entropy'] = MEAN_entropy
+  result_dict['digitwise_entropy'] = digitwise_avg_entropy
+
    
   return result_dict
 

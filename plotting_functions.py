@@ -745,4 +745,4 @@ def top_k_generation(VGG_cl, model,n_rep=100, nr_steps=100, temperature=1, k=100
   VStack_labels=VStack_labels.repeat(100)
   d_cl = Classifier_accuracy(LblBiasGenerated_imgs, VGG_cl, model, labels=VStack_labels, entropy_correction=entropy_correction, plot=0)
 
-  return d_cl['Cl_accuracy'][-1],d_cl['MEAN_entropy'][-1]
+  return d_cl['Cl_accuracy'][-1],d_cl['MEAN_entropy'][-1], d_cl['digitwise_acc'][:,-1]
