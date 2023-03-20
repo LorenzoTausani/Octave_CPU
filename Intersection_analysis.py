@@ -177,7 +177,9 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_
       mask = np.triu(np.ones_like(Vis_states_mat))
       # Set the lower triangle to NaN
       Vis_states_mat = np.where(mask==0, np.nan, Vis_states_mat)
-      ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82})
+      Vis_states_mat = Vis_states_mat.T
+      #ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar=False)
+      ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82}) #CBAR on the right
       #ax.set_xticklabels(T_mat_labels)
       ax.tick_params(axis='both', labelsize=20)
 
@@ -188,8 +190,9 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_
               ax.annotate(f'{value:.2f} \n ±{error:.2f}', xy=(j+0.5, i+0.5), 
                           ha='center', va='center', color='white', fontsize=20)
 
-      plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
-      plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
+      plt.xlabel('Digit', fontsize = 25) # x-axis label with fontsize 15
+      plt.ylabel('Digit', fontsize = 25) # y-axis label with fontsize 15
+      #cbar = plt.gcf().colorbar(ax.collections[0], location='left', shrink=0.82)
       cbar = ax.collections[0].colorbar
       cbar.ax.tick_params(labelsize=20)
       plt.show()
