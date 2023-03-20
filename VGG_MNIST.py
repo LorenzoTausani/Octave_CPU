@@ -90,8 +90,9 @@ class VGG16(nn.Module):
 
     return x
 
-
+  
 def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=1, plot=1, dS=30, l_sz=3):
+
   #plot = 2 -> only digitwise accuracy
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
   Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
@@ -170,62 +171,13 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
       c=0
       cmap = cm.get_cmap('hsv')
       lbls = range(model.Num_classes)
-
-      figure, axis = plt.subplots(2, 2, figsize=(20,15))
       x = range(1,input_data.size()[2]+1)
 
-      axis[0,0].plot(x, acc.cpu(), c = 'g', linewidth=l_sz)
-        
-      axis[0,0].tick_params(axis='x', labelsize= dS)
-      axis[0,0].tick_params(axis='y', labelsize= dS)
-      axis[0,0].set_ylabel('Accuracy',fontsize=dS)
-      axis[0,0].set_ylim([0,1])
-      axis[0,0].set_xlabel('Nr. of steps',fontsize=dS)
-      axis[0,0].set_title('Classifier accuracy',fontsize=dS)
-
-
-      axis[0,1].plot(x, MEAN_entropy.cpu(), c = 'r', linewidth=l_sz)
-      axis[0,1].fill_between(x,MEAN_entropy.cpu()-SEM_entropy.cpu(), MEAN_entropy.cpu()+SEM_entropy.cpu(), color='r',
-                      alpha=0.3)
-        
-      axis[0,1].tick_params(axis='x', labelsize= dS)
-      axis[0,1].tick_params(axis='y', labelsize= dS)
-      axis[0,1].set_ylabel('Entropy',fontsize=dS)
-      axis[0,1].set_ylim([0,1])
-      axis[0,1].set_xlabel('Nr. of steps',fontsize=dS)
-      axis[0,1].set_title('Average entropy',fontsize=dS)
-
-      for digit in range(model.Num_classes):
-        Color = cmap(c/256) 
-        MEAN = digitwise_acc[digit,:].cpu()
-        axis[1,0].plot(x, MEAN, c = Color, linewidth=l_sz)
-        c = c+25
-      
-      #axis[1,0].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
-      axis[1,0].tick_params(axis='x', labelsize= dS)
-      axis[1,0].tick_params(axis='y', labelsize= dS)
-      axis[1,0].set_ylabel('Accuracy',fontsize=dS)
-      axis[1,0].set_ylim([0,1])
-      axis[1,0].set_xlabel('Nr. of steps',fontsize=dS)
-      axis[1,0].set_title('Classifier accuracy - digitwise',fontsize=dS)
-        
-      c=0
-      for digit in range(model.Num_classes):
-        Color = cmap(c/256) 
-        MEAN = digitwise_avg_entropy[digit,:].cpu()
-        SEM = digitwise_sem_entropy[digit,:].cpu()
-        axis[1,1].plot(x, MEAN, c = Color, linewidth=l_sz)
-        axis[1,1].fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
-                alpha=0.3)
-        c = c+25
-      
-      axis[1,1].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
-      axis[1,1].tick_params(axis='x', labelsize= dS)
-      axis[1,1].tick_params(axis='y', labelsize= dS)
-      axis[1,1].set_ylabel('Entropy',fontsize=dS)
-      axis[1,1].set_ylim([0,1])
-      axis[1,1].set_xlabel('Nr. of steps',fontsize=dS)
-      axis[1,1].set_title('Entropy - digitwise',fontsize=dS)
+      figure, axis = plt.subplots(2, 2, figsize=(20,15))
+      Cl_plot(axis[0,0],x,acc,x_lab='Nr. of steps',y_lab='Classifier accuracy', lim_y = [0,1],Title = 'Classifier accuracy',l_sz=l_sz, dS= dS, color='g')
+      Cl_plot(axis[0,1],x,MEAN_entropy,y_err = SEM_entropy,x_lab='Nr. of steps',y_lab='Entropy', lim_y = [0,1],Title = 'Average entropy',l_sz=l_sz, dS= dS, color='r')
+      Cl_plot_digitwise(axis[1,0],lbls,x,digitwise_acc,x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy - digitwise',l_sz=l_sz, dS= dS, cmap=cmap)
+      Cl_plot_digitwise(axis[1,1],lbls,x,digitwise_avg_entropy,digitwise_y_err=digitwise_sem_entropy,x_lab='Generation step',y_lab='Entropy', lim_y = [0,1],Title = 'Entropy - digitwise',l_sz=l_sz, dS= dS, cmap=cmap)
 
       plt.subplots_adjust(left=0.1, 
                         bottom=0.1,  
@@ -237,22 +189,17 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
       c=0
       cmap = cm.get_cmap('hsv')
       lbls = range(model.Num_classes)
-      figure, axis = plt.subplots(1, 1, figsize=(15,15))
       x = range(1,input_data.size()[2]+1)
+      figure, axis = plt.subplots(1, 1, figsize=(15,15))
 
-      for digit in range(model.Num_classes):
-        Color = cmap(c/256) 
-        MEAN = digitwise_acc[digit,:].cpu()
-        axis.plot(x, MEAN, c = Color, linewidth=l_sz)
-        c = c+25
-      
-      #axis[1,0].legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
-      axis.tick_params(axis='x', labelsize= dS)
-      axis.tick_params(axis='y', labelsize= dS)
-      axis.set_ylabel('Accuracy',fontsize=dS)
-      axis.set_ylim([0,1])
-      axis.set_xlabel('Generation step',fontsize=dS)
-      axis.set_title('Classifier accuracy',fontsize=dS)
+      Cl_plot(axis,x,acc,x_lab='Nr. of steps',y_lab='Classifier accuracy', lim_y = [0,1],Title = 'Classifier accuracy',l_sz=l_sz, dS= dS, color='g')
+      figure, axis = plt.subplots(1, 1, figsize=(15,15))      
+      Cl_plot(axis,x,MEAN_entropy,y_err = SEM_entropy,x_lab='Nr. of steps',y_lab='Entropy', lim_y = [0,1],Title = 'Average entropy',l_sz=l_sz, dS= dS, color='r')
+      figure, axis = plt.subplots(1, 1, figsize=(15,15))
+      Cl_plot_digitwise(axis,lbls,x,digitwise_acc,x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy - digitwise',l_sz=l_sz, dS= dS, cmap=cmap)
+      figure, axis = plt.subplots(1, 1, figsize=(15,15))
+      Cl_plot_digitwise(axis,lbls,x,digitwise_avg_entropy,digitwise_y_err=digitwise_sem_entropy,x_lab='Generation step',y_lab='Entropy', lim_y = [0,1],Title = 'Entropy - digitwise',l_sz=l_sz, dS= dS, cmap=cmap)
+
      
 
   result_dict = dict(); 
@@ -494,3 +441,37 @@ def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=20):
       cbar.ax.tick_params(labelsize=lS)
 
       plt.show()
+
+def Cl_plot(axis,x,y,y_err=[],x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy',l_sz=3, dS=30, color='g'):
+  y=y.cpu()
+  
+  axis.plot(x, y, c = color, linewidth=l_sz)
+  if y_err != []:
+    y_err = y_err.cpu()
+    axis.fill_between(x,y-y_err, y+y_err, color=color,
+                alpha=0.3)
+  axis.tick_params(axis='x', labelsize= dS)
+  axis.tick_params(axis='y', labelsize= dS)
+  axis.set_ylabel(y_lab,fontsize=dS)
+  axis.set_ylim(lim_y)
+  axis.set_xlabel(x_lab,fontsize=dS)
+  axis.set_title(Title,fontsize=dS)
+
+def Cl_plot_digitwise(axis,lbls,x,digitwise_y,digitwise_y_err=[], Num_classes=10,x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy - digitwise',l_sz=3, dS= 30, cmap=cm.get_cmap('hsv')):
+  c=0
+  for digit in range(Num_classes):
+    Color = cmap(c/256) 
+    MEAN = digitwise_y[digit,:].cpu()
+    axis.plot(x, MEAN, c = Color, linewidth=l_sz)
+    if digitwise_y_err!=[]:
+      SEM = digitwise_y_err[digit,:].cpu()
+      axis.fill_between(x,MEAN-SEM, MEAN+SEM, color=Color,
+              alpha=0.3)
+    c = c+25
+  axis.legend(lbls, bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS) #cambia posizione
+  axis.tick_params(axis='x', labelsize= dS)
+  axis.tick_params(axis='y', labelsize= dS)
+  axis.set_ylabel(y_lab,fontsize=dS)
+  axis.set_ylim(lim_y)
+  axis.set_xlabel(x_lab,fontsize=dS)
+  axis.set_title(Title,fontsize=dS)
