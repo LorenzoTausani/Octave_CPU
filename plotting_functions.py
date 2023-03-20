@@ -553,8 +553,11 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
 
   #plot P(h=1) distribution
   df = pd.DataFrame(torch.transpose(average_Hid,0,1).numpy())
-
-  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=1.5)
+  cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
+  
+  Color = cmap(np.linspace(0, 250, num=11)/256)
+  Color[-1]=np.array([0.1, 0.1, 0.1, 1])
+  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=1.5, palette=Color)
   distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
   _, ylabels = plt.yticks()
   distr_percAct_units.set_yticklabels(ylabels, size=dS)
@@ -563,9 +566,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   plt.ylim(0, 1)
 
   fig, ax = plt.subplots(figsize=(15,10))
-  cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
-  Color = cmap(np.linspace(0, 250, num=11)/256)
-  Color[-1]=np.array([0.1, 0.1, 0.1, 1])
+
   rects1 = ax.bar(range(11),Active_hid,yerr=Active_hid_SEM, color=Color)
   ax.set_xlabel('Digit state', fontsize = dS)
   ax.set_ylabel('Nr of active units', fontsize = dS)
@@ -574,7 +575,6 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   ax.set_ylim(0,1000)
 
   return average_Hid, Active_hid, Active_hid_SEM
-
 
 def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_test_labels,type='sample_reconstruct', elements_of_interest = [1,7], t_beginning = 0.1,t_end = 2, t_step=0.1, consider_top_H=1000, plot = 'yes'):
   temperatures = np.arange(t_beginning, t_end, t_step)
