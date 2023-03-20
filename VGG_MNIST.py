@@ -186,7 +186,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
                         wspace=0.4,  
                         hspace=0.4) 
   elif plot==2:
-      c=0
+      
       cmap = cm.get_cmap('hsv')
       lbls = range(model.Num_classes)
       x = range(1,input_data.size()[2]+1)
