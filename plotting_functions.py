@@ -225,7 +225,7 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
     axis.tick_params(axis='x', labelsize= dS) 
     axis.tick_params(axis='y', labelsize= dS)
     axis.set_ylabel(y_lbl,fontsize=dS)
-    axis.set_xlabel('Nr. of steps',fontsize=dS)
+    axis.set_xlabel('Generation step',fontsize=dS)
     axis.set_title(y_lbl+' - digitwise',fontsize=dS)
     if metric_type=='cos':
       axis.set_ylim([0,1])
