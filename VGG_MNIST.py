@@ -213,7 +213,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
    
   return result_dict
 
-def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30, rounding=2, T_mat_labels=[]):
+def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30, rounding=2, T_mat_labels=[], Ian=0):
   '''
   dict_classifier: dizionario del classificatore, con dentro, tra le altre cose, le predizioni del classificatore
   model = la nostra RBM
@@ -347,6 +347,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
      df_sem = df_sem.iloc[0]
   '''
   if Plot==1:
+        
         if test_labels!=[]:
           df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(30,10),fontsize=dS)
           plt.xlabel("Digit",fontsize=dS)
@@ -360,44 +361,46 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         plt.legend(["Visited states", "Transitions"], bbox_to_anchor=(0.73,1), loc="upper left", fontsize=dS-dS/3)
         
 
-        '''
-        OLD PLOT: AVERAGE STATES VISITED BEGINNING FROM A CERTAIN LABEL BIASING DIGIT
-        QUESTO è IL PLOT MOSTRATO IN TESI
-        cmap = cm.get_cmap('hsv')
-        newcolors = cmap(np.linspace(0, 1, 256))
-        black = np.array([0.1, 0.1, 0.1, 1])
-        newcolors[-25:, :] = black
-        newcmp = ListedColormap(newcolors)
-        
-        if test_labels!=[]:
-          df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp)
-          plt.xlabel("Digit",fontsize=dS)       
-        else:
-          df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
-
-        #plt.title("Classification_metrics-2",fontsize=dS)
-        
-        plt.ylabel("Average nr of steps",fontsize=dS)
-        plt.ylim([0,100])
-        plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
-        '''
-
         #NEW PLOT(PER BRAIN INFORMATICS)
-        lS=18
-        Trans_nr = df_average.iloc[:, 2:-1]
-        Trans_nr = Trans_nr.apply(pd.to_numeric)
-        Trans_nr = Trans_nr.round(rounding)
-        Trans_nr = np.array(Trans_nr)
+        if Ian ==0:
+          lS=18
+          Trans_nr = df_average.iloc[:, 2:-1]
+          Trans_nr = Trans_nr.apply(pd.to_numeric)
+          Trans_nr = Trans_nr.round(rounding)
+          Trans_nr = np.array(Trans_nr)
 
-        Trans_nr_err = df_sem.iloc[:, 2:-1]
-        Trans_nr_err = Trans_nr_err.apply(pd.to_numeric)
-        Trans_nr_err = Trans_nr_err.round(rounding)
-        Trans_nr_err = np.array(Trans_nr_err)
+          Trans_nr_err = df_sem.iloc[:, 2:-1]
+          Trans_nr_err = Trans_nr_err.apply(pd.to_numeric)
+          Trans_nr_err = Trans_nr_err.round(rounding)
+          Trans_nr_err = np.array(Trans_nr_err)
 
-        StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18)
+          StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18)
 
-        #plot of the transition matrix
-        Transition_mat_plot(Transition_matrix_rowNorm, lS=20)
+          #plot of the transition matrix
+          Transition_mat_plot(Transition_matrix_rowNorm, lS=20)
+        else:
+          
+          #OLD PLOT: AVERAGE STATES VISITED BEGINNING FROM A CERTAIN LABEL BIASING DIGIT
+          #QUESTO è IL PLOT MOSTRATO IN TESI
+          cmap = cm.get_cmap('hsv')
+          newcolors = cmap(np.linspace(0, 1, 256))
+          black = np.array([0.1, 0.1, 0.1, 1])
+          newcolors[-25:, :] = black
+          newcmp = ListedColormap(newcolors)
+          
+          if test_labels!=[]:
+            df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp)
+            plt.xlabel("Digit",fontsize=dS)       
+          else:
+            df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
+
+          #plt.title("Classification_metrics-2",fontsize=dS)
+          
+          plt.ylabel("Average nr of steps",fontsize=dS)
+          plt.ylim([0,100])
+          plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
+          
+           
 
   return df_average, df_sem, Transition_matrix_rowNorm
 

@@ -126,7 +126,7 @@ class Intersection_analysis:
       
       reconstructed_imgs=d['vis_states']
       d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, self.model, plot=plot, entropy_correction=entropy_correction)
-      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,self.model, Plot=plot)
+      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,self.model, Plot=plot, Ian=1)
       
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
