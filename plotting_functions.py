@@ -10,7 +10,8 @@ import torch
 import random
 import itertools
 import scipy
-import seaborn as sns
+import seaborn as sn
+from google.colab import files
 
 from VGG_MNIST import Classifier_accuracy
 from VGG_MNIST import classification_metrics
@@ -746,3 +747,76 @@ def top_k_generation(VGG_cl, model,n_rep=100, nr_steps=100, temperature=1, k=100
   d_cl = Classifier_accuracy(LblBiasGenerated_imgs, VGG_cl, model, labels=VStack_labels, entropy_correction=entropy_correction, plot=0)
 
   return d_cl['Cl_accuracy'][-1],d_cl['MEAN_entropy'][-1], d_cl['digitwise_acc'][:,-1]
+
+def Cl_plot(axis,x,y,y_err=[],x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy',l_sz=3, dS=30, color='g'):
+  y=y.cpu()
+  
+  axis.plot(x, y, c = color, linewidth=l_sz)
+  if y_err != []:
+    y_err = y_err.cpu()
+    axis.fill_between(x,y-y_err, y+y_err, color=color,
+                alpha=0.3)
+  axis.tick_params(axis='x', labelsize= dS)
+  axis.tick_params(axis='y', labelsize= dS)
+  axis.set_ylabel(y_lab,fontsize=dS)
+  axis.set_ylim(lim_y)
+  axis.set_xlabel(x_lab,fontsize=dS)
+  axis.set_title(Title,fontsize=dS)
+
+def Accuracy_fof_k(VGG_cl, model,start = 0,step = 50,stop = 1000, new_data = True):
+    stop = stop+step
+    filename = 'accuracy_asfof_k.xlsx'
+
+    if new_data:
+      r = range(start, stop, step)
+      L = len(list(r))
+      Acc_T = torch.Tensor(L)
+      Entr_T = torch.Tensor(L)
+      digitwiseAcc_T = torch.Tensor(model.Num_classes,L)
+
+      c=0
+      for k in range(start,stop,step):
+        final_acc, final_entropy,digitwise_finalAcc  = top_k_generation(VGG_cl, model,n_rep=100, nr_steps=100, temperature=1, k=k)
+        Acc_T[c] = final_acc
+        Entr_T[c] = final_entropy
+        if k==0:
+          top_acc = final_acc
+          top_k=k
+        elif final_acc>top_acc:
+          top_acc = final_acc
+          top_k=k
+
+        digitwiseAcc_T[:,c]=digitwise_finalAcc
+        c+=1
+
+      y_err=digitwiseAcc_T.std(dim=0)/digitwiseAcc_T.shape[0]
+      y=digitwiseAcc_T.mean(dim=0)
+    else:
+      # load the excel file into a pandas dataframe
+      df = pd.read_excel(filename)
+
+      # extract y and y_err as numpy arrays
+      y = np.array(df['y'])
+      y_err = np.array(df['y_err'])
+      # convert y and y_err to PyTorch tensors
+      y = torch.tensor(y)
+      y_err = torch.tensor(y_err)
+      top_acc , top_k = torch.max(y, dim=0)
+      top_k = top_k*step
+
+
+
+    x = range(start,stop,step)
+    lbls = range(model.Num_classes)
+    
+    figure, axis = plt.subplots(1, 1, figsize=(15,5))
+    Cl_plot(axis,x,y,y_err=y_err,x_lab='k',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy - top k = 1',l_sz=5, dS= 30, color='g')
+    print('top k = '+str(top_k)+', acc = '+str(top_acc))
+
+    if new_data:
+      
+      df = pd.DataFrame({'y': y, 'y_err': y_err})
+      # save the dataframe to an excel file
+      df.to_excel(filename, index=False)
+      files.download(filename)
+
