@@ -10,7 +10,7 @@ import torch
 import random
 import itertools
 import scipy
-import seaborn as sn
+import seaborn as sns
 from google.colab import files
 
 from VGG_MNIST import Classifier_accuracy
