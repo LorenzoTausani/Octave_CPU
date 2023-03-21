@@ -557,7 +557,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   
   Color = cmap(np.linspace(0, 250, num=11)/256)
   Color[-1]=np.array([0.1, 0.1, 0.1, 1])
-  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=1.5, palette=Color)
+  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=2.5, palette=Color)
   distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
   _, ylabels = plt.yticks()
   distr_percAct_units.set_yticklabels(ylabels, size=dS)
