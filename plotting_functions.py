@@ -531,7 +531,7 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
   return dict_VHstate_nrTransitions, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
 
 
-def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
+def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30, aspect_ratio = 2.5):
   average_Hid = torch.zeros(11,1000)
   Active_hid = torch.zeros(11,1)
   Active_hid_SEM = torch.zeros(11,1)
@@ -557,7 +557,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30):
   
   Color = cmap(np.linspace(0, 250, num=11)/256)
   Color[-1]=np.array([0.1, 0.1, 0.1, 1])
-  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=2.5, palette=Color)
+  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=aspect_ratio, palette=Color)
   distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
   _, ylabels = plt.yticks()
   distr_percAct_units.set_yticklabels(ylabels, size=dS)
