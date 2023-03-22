@@ -387,22 +387,21 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           black = np.array([0.1, 0.1, 0.1, 1])
           newcolors[-25:, :] = black
           newcmp = ListedColormap(newcolors)
-          fig, ax = plt.subplots()
           
           if test_labels!=[]:
             df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp)
-            ax.xlabel("Digit",fontsize=dS)       
+            plt.xlabel("Digit",fontsize=dS)       
           else:
             df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
 
           #plt.title("Classification_metrics-2",fontsize=dS)
           
-          ax.ylabel("Average nr of steps",fontsize=dS)
-          ax.ylim([0,100])
+          plt.ylabel("Average nr of steps",fontsize=dS)
+          plt.ylim([0,100])
           #plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
           # Put a legend below current axis
-          ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),
+          plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),
                     fancybox=True, shadow=True, ncol=6)
           
            
