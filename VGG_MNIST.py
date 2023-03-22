@@ -91,7 +91,7 @@ class VGG16(nn.Module):
     return x
 
   
-def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=1, plot=1, dS=30, l_sz=3):
+def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=0, plot=1, dS=30, l_sz=3):
 
   #plot = 2 -> only digitwise accuracy
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
