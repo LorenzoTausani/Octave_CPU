@@ -577,6 +577,21 @@ def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30, aspect_ratio = 2.5
 
   return average_Hid, Active_hid, Active_hid_SEM
 
+def error_propagation(measures, measures_error, operation = 'average'):
+  #https://www.geol.lsu.edu/jlorenzo/geophysics/uncertainties/Uncertaintiespart2.html
+  nr_of_measures = len(measures_error)
+  if isinstance(measures, list):
+    measures = np.asarray(measures)
+  if isinstance(measures_error, list):
+    measures_error = np.asarray(measures_error)
+
+  if operation=='average':
+    propagated_err = (1/nr_of_measures)*np.sum(np.power((measures_error),2)) #senza radice quadrata?
+  elif operation == 'ratio':
+    propagated_err = np.sum(measures_error/measures)*(measures[0]/measures[1]) #i.e. the result of the ratio
+
+  return propagated_err
+
 def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_test_labels,type='sample_reconstruct', elements_of_interest = [1,7], t_beginning = 0.1,t_end = 2, t_step=0.1, consider_top_H=1000, plot = 'yes'):
   temperatures = np.arange(t_beginning, t_end, t_step)
   variables_of_interest = ['Nr_visited_states', 'Nr_transitions','Non-digit'] #,'Ratio_2nd_trueClass'
