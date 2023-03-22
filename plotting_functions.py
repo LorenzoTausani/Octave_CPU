@@ -642,7 +642,7 @@ def between_temperatures_analysis(model, VGG_cl, Ian, sample_test_data, sample_t
 
     elif type=='chimera':
       #d, df_average = Ian.generate_chimera_lbl_biasing(VGG_cl, elements_of_interest = elements_of_interest, nr_of_examples = sample_test_labels.size()[0], temperature = t)
-      d, d_cl, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = elements_of_interest, nr_of_examples = 1000, temperature = t)
+      d, d_cl, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = elements_of_interest, nr_of_examples = 1000, temperature = t, entropy_correction=0)
     m = df_average[variables_of_interest].mean()
     var_idx_count = 0
     for var in variables_of_interest:
