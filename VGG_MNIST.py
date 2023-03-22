@@ -400,7 +400,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           plt.ylim([0,100])
           #plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
-          plt.legend(bbox_to_anchor=(0.1,-0.2), loc="lower center", fontsize=dS, ncol=len(to_list))
+          plt.legend(bbox_to_anchor=(0.1,-0.2), loc="lower center", fontsize=dS, ncol=3)
           plt.subplots_adjust(bottom=0.2) # Adjust bottom margin to make space for the legend
           
            
