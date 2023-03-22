@@ -389,10 +389,10 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           newcmp = ListedColormap(newcolors)
           
           if test_labels!=[]:
-            df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp)
+            df_average.plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(10,10),fontsize=dS,width=0.8,colormap=newcmp)
             plt.xlabel("Digit",fontsize=dS)       
           else:
-            df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(20,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
+            df_average.iloc[0:1].plot(y=to_list, kind="bar",yerr=df_sem.loc[:, to_list],figsize=(10,10),fontsize=dS,width=0.8,colormap=newcmp,xticks=[])
 
           #plt.title("Classification_metrics-2",fontsize=dS)
           
