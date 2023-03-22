@@ -402,7 +402,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
 
           # Put a legend below current axis
           plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-                    fancybox=True, shadow=True, ncol=5, fontsize=dS)
+                    fancybox=True, shadow=True, ncol=4, fontsize=dS)
           
            
 
