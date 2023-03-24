@@ -533,22 +533,29 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
 
 
 def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30, aspect_ratio = 2.5):
+  '''
+  INPUTS: d_Reconstruct_t1_allH: dictionary obtrained from the reconstruct method of the RBM. It includes visible and hidden states obtained in the generation
+  d_cl: dictionary obtained from the classifier accuracy function. It includes the classifications of generated samples
+  '''
   average_Hid = torch.zeros(11,1000)
   Active_hid = torch.zeros(11,1)
   Active_hid_SEM = torch.zeros(11,1)
+  #for every digit and non-digit class (total:11 classes)...
   for class_of_interest in range(11):
-
+    # Create a tensor of zeros with nrows equal to the number of elements classified as the class of interest, 
+    # and 1000 columns (i.e. the number of hidden units of the net)
     Non_num_Hid = torch.zeros(torch.sum(d_cl['Cl_pred_matrix']==class_of_interest),1000)
 
     counter = 0
-    for example in range(1000):
-      for step in range(100):
-        if (d_cl['Cl_pred_matrix']==class_of_interest)[example,step]==True:
-          Non_num_Hid[counter,:]=d_Reconstruct_t1_allH['hid_states'][example,:,step]
+    for example in range(1000): #1000 dovrebbe essere il numero totale di campioni generati. Potrebbe essere fatta non hardcoded
+      for step in range(100): #nr of generation step
+        # Check if the example belongs to the class_of_interest at generation step "step"
+        if (d_cl['Cl_pred_matrix']==class_of_interest)[example,step]==True: 
+          Non_num_Hid[counter,:]=d_Reconstruct_t1_allH['hid_states'][example,:,step] #insert the corresponding hidden state vector at index "counter"
           counter+=1
 
-    average_Hid[class_of_interest,:]=torch.mean(Non_num_Hid,0)
-    Active_hid[class_of_interest] = torch.mean(torch.sum(Non_num_Hid,1))
+    average_Hid[class_of_interest,:]=torch.mean(Non_num_Hid,0) #columnwise average of Non_num_Hid -> P(h=1)
+    Active_hid[class_of_interest] = torch.mean(torch.sum(Non_num_Hid,1)) #mean of the sum of elements along the second dimension (axis=1) of a tensor called "Non_num_Hid"
     Active_hid_SEM[class_of_interest] = torch.std(torch.sum(Non_num_Hid,1))/np.sqrt(torch.sum(Non_num_Hid,1).size()[0])
     #print(torch.std(torch.sum(Non_num_Hid,1)),np.sqrt(torch.sum(Non_num_Hid,1).size()[0]) )
 
