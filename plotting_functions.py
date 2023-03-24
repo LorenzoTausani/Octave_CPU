@@ -63,7 +63,7 @@ def Between_model_Cl_accuracy(models_list, nr_steps, dS = 50, l_sz = 5):
   plt.show()
 
 
-def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example', consider_top = 1000, dS=20):
+def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 10, d_type='example', consider_top = 1000, dS=20, custom_steps = True):
     '''
     INPUT: 
     input_data: possono essere o dataset da ricostruire (in tal caso d_type='example'), o visible ottenuti da label biasing (in tal caso d_type='lbl_biasing')
@@ -71,7 +71,10 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
     '''
 
     rows = math.floor(nr_steps/row_step) #calcolo il numero di rows che dovrà avere il mio plot
-    
+    steps=[2,3,4,5,10,25,50,100]
+    if custom_steps:
+      rows=len(steps)
+
     #calcolo il numero di colonne che dovrà avere il mio plot, e in funzione di quello imposto la figsize
     if not(d_type=='example' or d_type=='lbl_biasing'): 
         cols = input_data.size()[0] 
@@ -91,6 +94,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
           orig_data = input_data # copio in questo modo per poi ottenere agilmente i dati originali
           d= model.reconstruct(input_data.data[good_digits_idx].to(model.DEVICE),nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         else:
+          
           figure, axis = plt.subplots(rows+1,cols, figsize=(25,2.5*(1+rows)))
           orig_data = input_data.view((10,28,28))
           d= model.reconstruct(orig_data,nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
@@ -110,7 +114,11 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
             else:
               axis[0, lbl].imshow(orig_data[lbl,:,:].cpu() , cmap = 'gray')
               #axis[0, lbl].set_title("Biasing digit:{}".format(lbl))
-              axis[0, lbl].set_title("Step 1", fontsize=dS)
+              #axis[0, lbl].set_title("Step 1", fontsize=dS)
+              if lbl==0:
+                ylabel = axis[0, lbl].set_ylabel("Step {}".format(1), fontsize=dS, rotation=0, labelpad=70)
+
+
               before = 0
             axis[0, lbl].set_aspect('equal')
 
@@ -124,21 +132,31 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
           axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
               labelbottom = False, bottom = False)
           axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
-          axis[before, lbl].set_title("Step {}".format(1), fontsize=dS)
+          #axis[before, lbl].set_title("Step {}".format(1), fontsize=dS)
+          if lbl==0:
+            ylabel = axis[before, lbl].set_ylabel("Step {}".format(1), fontsize=dS,rotation=0, labelpad=70)
+
           axis[before, lbl].set_xticklabels([])
           axis[before, lbl].set_yticklabels([])
           axis[before, lbl].set_aspect('equal')
- 
-        for idx,step in enumerate(range(row_step,nr_steps+1,row_step)): # idx = riga dove plotterò, step è il recostruction step che ci plotto
+        
+        #for idx,step in enumerate(range(row_step,nr_steps+1,row_step)): # idx = riga dove plotterò, step è il recostruction step che ci plotto
+        for idx,step in enumerate(steps): # idx = riga dove plotterò, step è il recostruction step che ci plotto
             idx = idx+before+1 #sempre +1 perchè c'è sempre 1 step reconstruction (+1 se before=1 perchè c'è anche l'originale)
             
             #plotto la ricostruzione
+
             reconstructed_img= input_data[lbl,:,step-1] #step-1 perchè 0 è la prima ricostruzione
             reconstructed_img = reconstructed_img.view((28,28)).cpu()
             axis[idx, lbl].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
             axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')
-            axis[idx, lbl].set_title("Step {}".format(step) , fontsize=dS)
+            #axis[idx, lbl].set_title("Step {}".format(step) , fontsize=dS)
+            if lbl==0:
+              ylabel = axis[idx, lbl].set_ylabel("Step {}".format(step), fontsize=dS, rotation=0, labelpad=70)
+              
+
+
             axis[idx, lbl].set_xticklabels([])
             axis[idx, lbl].set_yticklabels([])
             axis[idx, lbl].set_aspect('equal')
