@@ -219,53 +219,43 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   model = la nostra RBM
   test_labels = groundtruth labels
   '''
+  nr_states = model.Num_classes+1 #+1 because we consider also the NON DIGIT class
 
-  Cl_pred_matrix=dict_classifier['Cl_pred_matrix'] #classes predicted by the classifier
-  nr_ex=dict_classifier['Cl_pred_matrix'].size()[0] #number of example 
+  Cl_pred_matrix=dict_classifier['Cl_pred_matrix'] #classes predicted by the classifier (nr examples x nr generation steps)
+  nr_ex=dict_classifier['Cl_pred_matrix'].size()[0] #number of examples
   #Transition matrix
-  Transition_matrix = torch.zeros((11,11))
+  Transition_matrix = torch.zeros((nr_states,nr_states))
 
-  for row in Cl_pred_matrix:
-    for n in range(1,len(row)):
-      #print(n)
-      #print(row[n-1].long(),row[n].long())
-      Transition_matrix[row[n-1].long(),row[n].long()] += 1
+  for row in Cl_pred_matrix: #for every example classifications
+    for nr_genStep in range(1,len(row)): #for each generation step
+      Transition_matrix[row[nr_genStep-1].long(),row[nr_genStep].long()] += 1 #add +1 to the entry of the Transition matrix
+      #corresponding to the row of the digit of the previous generation step [nr_genStep-1], and the column corresponding to the digit of the 
+      #current digit [nr_genStep]
+      #IN OTHER WORDS, THE TRANSITION MATRIX IS ESTIMATED FROM ALL THE TRANSITIONS IN THE GENERATED DATASET
 
-  Transition_matrix_rowNorm = Transition_matrix
+  Transition_matrix_rowNorm = Transition_matrix 
 
-  for i in range(11):
-    Transition_matrix_rowNorm[i,:] = torch.div(Transition_matrix[i,:],torch.sum(Transition_matrix,1)[i])
-  '''
-  plt.figure(figsize=(15, 15))
-  ax = sns.heatmap(Transition_matrix_rowNorm, linewidth=0.5, annot=True, annot_kws={"size": 12},square=True)
-  plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
-  plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
-
-  plt.show()
-  '''
-  
-
+  for i in range(nr_states): #for every row of the transition matrix...
+    Transition_matrix_rowNorm[i,:] = torch.div(Transition_matrix[i,:],torch.sum(Transition_matrix,1)[i]) #divide each entry by the sum of the entire row (torch.sum(Transition_matrix,1)[i])
 
   
   #creo la lista delle categorie delle transizioni ad un certo digit
-  to_list = []
-  for digit in range(model.Num_classes+1):
+
+  to_list = [] #this is a string list containing all states (included non digit). They will be the columns of the output dataframes
+  for digit in range(nr_states):
     if  digit < model.Num_classes:
-      #to_list.append('to_'+ str(digit))
       to_list.append(str(digit))
     else:
       to_list.append('Non-digit')
 
 
-
-
-  columns = ['Nr_visited_states','Nr_transitions']+to_list
+  columns = ['Nr_visited_states','Nr_transitions'] + to_list #the columns of the dataframes created below
   #creo i due dataframes: uno per le medie e l'altro per i relativi errori
   if test_labels == []:
       df_average = pd.DataFrame(columns=columns)
       df_sem = pd.DataFrame(columns=columns)
   else:
-      index = range(model.Num_classes)
+      index = range(model.Num_classes) 
       df_average = pd.DataFrame(index=index, columns=columns)
       df_sem = pd.DataFrame(index=index, columns=columns)
 
@@ -275,21 +265,22 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
       digit_idx = test_labels==digit #trovo la posizione del digit tra le labels groundtruth...
       Vis_digit = dict_classifier['Cl_pred_matrix'][digit_idx,:] #trovo le predizioni del classificatore in quelle posizioni
     else:
-      Vis_digit = dict_classifier['Cl_pred_matrix']
+      Vis_digit = dict_classifier['Cl_pred_matrix'] #i just take all predictions together
     nr_visited_states_list =[] #qui listerò gli stati che vado a visitare
     nr_transitions_list =[] #qui listerò invece il numero di transizioni che farò
     to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1) #this is a matrix with nr.rows=nr.examples, nr.cols = 10+1 (nr. digits+no digits category)
     
-    for nr_ex,example in enumerate(Vis_digit): # example=tensor of the reconstructions category guessed by the classifier
-      no10_example=example[example!=10]
-      visited_states = torch.unique(no10_example) # find all the states (digits) visited by the RBM (NOTA:NON TENGO CONTO DEL 10)
+    for nr_ex,example in enumerate(Vis_digit): # example=tensor of the reconstructions category guessed by the classifier in a single example (i.e. row-wise)
+      no10_example = example[example!=10] #here are all generations different from nondigit
+      visited_states = torch.unique(no10_example) # find all the states (digits) visited by the RBM (NOTA:NON TENGO CONTO DEL 10(non-digit))
       nr_visited_states = len(visited_states)
-      transitions,counts = torch.unique_consecutive(no10_example,return_counts=True)
+      transitions,counts = torch.unique_consecutive(no10_example, return_counts=True) #transitions are the states sequentially explored during the generation
       nr_transitions = len(transitions)
-      to_digits = torch.zeros(model.Num_classes+1)
+      to_digits = torch.zeros(nr_states) #vector of 11 elements
 
-      transitions,counts = torch.unique_consecutive(example,return_counts=True)
-      visited_states = torch.unique(example) 
+      transitions,counts = torch.unique_consecutive(example,return_counts=True) #now i include 10 in the transition count
+      visited_states = torch.unique(example) #and in the nr of visited states
+      # below, for all states visited, i get the nr of steps in which the state was explored
       for state in visited_states:
         idx_state= transitions == state
         to_digits[state.to(torch.long)] = torch.sum(counts[idx_state])
@@ -297,7 +288,6 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
       nr_visited_states_list.append(nr_visited_states)
       nr_transitions_list.append(nr_transitions)
       to_digits_mat[nr_ex,:] = to_digits
-    
 
     df_average.at[digit,'Nr_visited_states'] = round(sum(nr_visited_states_list)/len(nr_visited_states_list),2)
     df_average.at[digit,'Nr_transitions'] = round(sum(nr_transitions_list)/len(nr_transitions_list),2)
@@ -310,42 +300,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   #ratio tra passaggi alla classe giusta e la seconda classe di più alta frequenza
   to_mat = df_average.iloc[:, 2:-1]
   sem_mat = df_sem.iloc[:, 2:-1]
-  def error_propagation(measures, measures_error, operation = 'average'):
-    #https://www.geol.lsu.edu/jlorenzo/geophysics/uncertainties/Uncertaintiespart2.html
-    nr_of_measures = len(measures_error)
-    if isinstance(measures, list):
-      measures = np.asarray(measures)
-    if isinstance(measures_error, list):
-      measures_error = np.asarray(measures_error)
 
-    if operation=='average':
-      propagated_err = (1/nr_of_measures)*np.sum(np.power((measures_error),2)) #senza radice quadrata?
-    elif operation == 'ratio':
-      propagated_err = np.sum(measures_error/measures)*(measures[0]/measures[1]) #i.e. the result of the ratio
-
-    return propagated_err
-
-  if test_labels!=[]:
-    ratio_list =[]
-    ratio_propErr = []
-    for index, row in to_mat.iterrows():
-        measures_err=[]
-        row = row.to_numpy()
-        to_2nd_largest = np.amax(np.delete(row, index, None))
-        measures_err.append(sem_mat.iloc[index,np.argmax(row==to_2nd_largest)]) #errore dell'originale
-        measures_err.append(sem_mat.iloc[index,index]) #errore del secondo digit
-        ratio_2nd_on_trueClass = to_2nd_largest/row[index]
-        ratio_list.append(ratio_2nd_on_trueClass)
-        ratio_propErr.append(error_propagation([to_2nd_largest,row[index]], measures_err, operation = 'ratio'))
-
-    df_average['Ratio_2nd_trueClass'] = ratio_list
-    df_sem['Ratio_2nd_trueClass'] = ratio_propErr
-    
-  '''
-  else:
-     df_average = df_average.iloc[0]
-     df_sem = df_sem.iloc[0]
-  '''
   if Plot==1:
         
         if test_labels!=[]:
@@ -364,12 +319,12 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
         #NEW PLOT(PER BRAIN INFORMATICS)
         if Ian ==0:
           lS=18
-          Trans_nr = df_average.iloc[:, 2:-1]
+          Trans_nr = df_average.iloc[:, 2:]
           Trans_nr = Trans_nr.apply(pd.to_numeric)
           Trans_nr = Trans_nr.round(rounding)
           Trans_nr = np.array(Trans_nr)
 
-          Trans_nr_err = df_sem.iloc[:, 2:-1]
+          Trans_nr_err = df_sem.iloc[:, 2:]
           Trans_nr_err = Trans_nr_err.apply(pd.to_numeric)
           Trans_nr_err = Trans_nr_err.round(rounding)
           Trans_nr_err = np.array(Trans_nr_err)
