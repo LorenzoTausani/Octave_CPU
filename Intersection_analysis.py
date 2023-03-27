@@ -6,6 +6,10 @@ from VGG_MNIST import *
 from plotting_functions import *
 from google.colab import files
 import pandas as pd
+import numpy as np
+import scipy
+import matplotlib.plot as plt
+import seaborn as sns
 
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
@@ -133,7 +137,8 @@ class Intersection_analysis:
       
       return d, d_cl, df_average,df_sem, Transition_matrix_rowNorm
 
-def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_correction=1):
+
+def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_correction=1, lS=20):
     n_digits = Ian.model.Num_classes
     fN='Visited_digits_k' + str(Ian.top_k_Hidden)+'.xlsx'
     fNerr='Visited_digits_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
@@ -179,16 +184,10 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_
       Vis_states_mat = np.where(mask==0, np.nan, Vis_states_mat)
       Vis_states_mat = Vis_states_mat.T
       #ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar=False)
-      ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82}) #CBAR on the right
+      ax = sns.heatmap(torch.round(Vis_states_mat, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
+
       #ax.set_xticklabels(T_mat_labels)
       ax.tick_params(axis='both', labelsize=20)
-
-      for i in range(n_digits):
-          for j in range(n_digits):
-              value = Vis_states_mat[i, j]
-              error = Vis_states_err[i, j]
-              ax.annotate(f'{value:.2f} \n ±{error:.2f}', xy=(j+0.5, i+0.5), 
-                          ha='center', va='center', color='white', fontsize=20)
 
       plt.xlabel('Digit', fontsize = 25) # x-axis label with fontsize 15
       plt.ylabel('Digit', fontsize = 25) # y-axis label with fontsize 15
