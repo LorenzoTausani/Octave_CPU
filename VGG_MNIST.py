@@ -368,7 +368,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
 
 
         plt.figure(figsize=(15, 15))
-        ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82})
+        ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82}, cmap='jet')
         if T_mat_labels==[]:
            T_mat_labels = ['0','1','2','3','4','5','6','7','8','9','Non digit']
 
@@ -380,7 +380,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
             for j in range(Trans_nr.shape[1]):
                 value = Trans_nr[i, j]
                 error = Trans_nr_err[i, j]
-                ax.annotate(f'{value:.{rounding}f} \n ±{error:.{rounding}f}', xy=(j+0.5, i+0.5), 
+                ax.annotate(f'{value:.{rounding}f}', xy=(j+0.5, i+0.5), 
                             ha='center', va='center', color='white', fontsize=20)
 
         plt.xlabel('Digit state', fontsize = 25) # x-axis label with fontsize 15
@@ -393,7 +393,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
 def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=20):
       plt.figure(figsize=(15, 15))
       Transition_matrix=Transition_matrix_rowNorm*100
-      ax = sns.heatmap(torch.round(Transition_matrix, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f')
+      ax = sns.heatmap(torch.round(Transition_matrix, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
       plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
       plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
       if T_mat_labels==[]:
