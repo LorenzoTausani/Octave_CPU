@@ -8,7 +8,7 @@ from google.colab import files
 import pandas as pd
 import numpy as np
 import scipy
-import matplotlib.plot as plt
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 def mean_h_prior(model):
