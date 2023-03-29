@@ -368,20 +368,12 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
 
 
         plt.figure(figsize=(15, 15))
-        ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=False,square=True, cbar_kws={"shrink": .82}, cmap='jet')
+        ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=True, annot_kws={"size": lS}, square=True, cbar_kws={"shrink": .82},fmt='.1f', cmap='jet')
         if T_mat_labels==[]:
            T_mat_labels = ['0','1','2','3','4','5','6','7','8','9','Non digit']
 
         ax.set_xticklabels(T_mat_labels)
         ax.tick_params(axis='both', labelsize=lS)
-
-
-        for i in range(Trans_nr.shape[0]):
-            for j in range(Trans_nr.shape[1]):
-                value = Trans_nr[i, j]
-                error = Trans_nr_err[i, j]
-                ax.annotate(f'{value:.{rounding}f}', xy=(j+0.5, i+0.5), 
-                            ha='center', va='center', color='white', fontsize=20)
 
         plt.xlabel('Digit state', fontsize = 25) # x-axis label with fontsize 15
         plt.ylabel('Biasing digit', fontsize = 25) # y-axis label with fontsize 15
@@ -405,7 +397,6 @@ def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=20):
       cbar.ax.tick_params(labelsize=lS)
 
       plt.show()
-
 def Cl_plot(axis,x,y,y_err=[],x_lab='Generation step',y_lab='Accuracy', lim_y = [0,1],Title = 'Classifier accuracy',l_sz=3, dS=30, color='g'):
   y=y.cpu()
   
