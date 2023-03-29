@@ -859,4 +859,3 @@ def Accuracy_fof_k(VGG_cl, model,start = 0,step = 50,stop = 1000, new_data = Tru
       # save the dataframe to an excel file
       df.to_excel(filename, index=False)
       files.download(filename)
-
