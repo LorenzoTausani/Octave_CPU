@@ -184,7 +184,7 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, entropy_
       Vis_states_mat = np.where(mask==0, np.nan, Vis_states_mat)
       Vis_states_mat = Vis_states_mat.T
       #ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar=False)
-      ax = sns.heatmap(torch.round(Vis_states_mat, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
+      ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
 
       #ax.set_xticklabels(T_mat_labels)
       ax.tick_params(axis='both', labelsize=20)
