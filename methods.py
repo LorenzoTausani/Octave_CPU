@@ -2,11 +2,12 @@ import torch
 import math
 import copy
 
-def label_biasing(model, on_digits=1):
+def label_biasing(model, on_digits=1, topk = 149):
 
         # aim of this function is to implement the label biasing procedure described in
         # https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00515/full
         
+
  
         # Now i set the label vector from which i will obtain the hidden layer of interest 
         Biasing_vec = torch.zeros (model.Num_classes,1, device = model.DEVICE)
@@ -14,6 +15,16 @@ def label_biasing(model, on_digits=1):
 
         #I compute the biased hidden vector as the matmul of the trasposed weights_inv and the biasing vec. gen_hidden will have size (Hidden layer size x 1)
         gen_hidden= torch.matmul(torch.transpose(model.weights_inv,0,1), Biasing_vec)
+
+        if topk>-1: #ATTENZIONE: label biasing con più di una label attiva (e.g. on_digits=[4,6]) funziona UNICAMENTE con topk>-1 (i.e. attivando le top k unità piu attive e silenziando le altre)
+        #In caso contrario da errore CUDA non meglio specificato
+          H = torch.zeros_like(gen_hidden, device = model.DEVICE) #crea un array vuoto della forma di gen_hidden
+          for c in range(gen_hidden.shape[1]): # per ciascun esempio di gen_hidden...
+            top_indices = torch.topk(gen_hidden[:,c], k=topk).indices # computa gli indici più attivati
+            H[top_indices,c] = 1 #setta gli indici più attivi a 1
+          gen_hidden = H # gen_hidden ha ora valori binari (1 e 0)
+
+
 
         return gen_hidden
 
