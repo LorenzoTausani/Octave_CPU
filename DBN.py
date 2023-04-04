@@ -114,7 +114,22 @@ class DBN():
                         if torch.mean(Q) > self.spars_factor:
                             hidbiases = hidbiases - self.epsilonhb*(Q-self.spars_factor)
                 self.err[epoch, layer] = errsum; 
-        
+    
+    def compute_inverseW_for_lblBiasing(self):
+
+        tr_patterns = torch.squeeze(self.TRAIN_gen_hid_states) #This array contains the 1st hidden state obtained from the reconstruction of all the MNIST training set (size: nr_MNIST_train_ex x Hidden layer size)
+        #L is a array of size (model.Num_classes x nr_MNIST_train_ex (10 x 60000)). Each column of it is the one-hot encoded label of the i-th MNIST train example
+        L = torch.zeros(self.Num_classes,tr_patterns.shape[0], device = self.DEVICE)
+        c=0
+        for lbl in self.TRAIN_lbls:
+            L[lbl,c]=1
+            c=c+1
+        #I compute the inverse of the weight matrix of the linear classifier. weights_inv has shape (model.Num_classes x Hidden layer size (10 x 1000))
+        weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
+
+        self.weights_inv = weights_inv
+
+        return weights_inv
 
     def train_RBM(self,data_mb,numcases, epoch):
         momentum = self.init_momentum

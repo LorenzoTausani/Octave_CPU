@@ -72,6 +72,7 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
     filename = 'OctaveCPU_RBM'+ str(nr_train_epochs_done)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)+V
 
     model = load_model(filename)
+    model.compute_inverseW_for_lblBiasing() #PROVVISORIA. Computo Weights_inv ogni volta perchè non voglio allenare il modello da capo. Però in futuro, quando il modello sarà riallenato, va tolta questa linea
 
   else:
     num_epochs = int(input('trainare la rete? quante epoche? (0 se non si vuole trainare'))
@@ -79,6 +80,7 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
     
     model = DBN(maxepochs   = num_epochs ,device=DEVICE, Visible_mode = vis_is_binary)    
     model.train(train_data,train_labels)
+    model.compute_inverseW_for_lblBiasing()
 
   dati_generati_yn = int(input('creare nuovi dati generati (0=no, 1=train, 2=test, 3= entrambi)'))
 
