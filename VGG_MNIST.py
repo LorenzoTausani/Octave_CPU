@@ -91,18 +91,21 @@ class VGG16(nn.Module):
     return x
 
   
-def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=0, plot=1, dS=30, l_sz=3):
+def Classifier_accuracy(input_dict, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=0, plot=1, dS=30, l_sz=3):
 
   #plot = 2 -> only digitwise accuracy
+
+  input_data = input_dict['vis_states']
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
-  Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
-  Pred_entropy_mat = torch.zeros(input_data.size()[0],input_data.size()[2]).to(model.DEVICE)
-  digitwise_acc = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
-  digitwise_avg_entropy = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
-  digitwise_sem_entropy = torch.zeros(model.Num_classes,input_data.size()[2]).to(model.DEVICE)
+  
+  Cl_pred_matrix = torch.zeros(input_data.size()[0],input_data.size()[2], device=model.DEVICE)
+  Pred_entropy_mat = torch.zeros(input_data.size()[0],input_data.size()[2], device=model.DEVICE)
+  digitwise_acc = torch.zeros(model.Num_classes,input_data.size()[2], device=model.DEVICE)
+  digitwise_avg_entropy = torch.zeros(model.Num_classes,input_data.size()[2], device=model.DEVICE)
+  digitwise_sem_entropy = torch.zeros(model.Num_classes,input_data.size()[2], device=model.DEVICE)
   acc = torch.zeros(input_data.size()[2])
   if labels==[]:
-    labels = torch.zeros(input_data.size()[0]).to(model.DEVICE)
+    labels = torch.zeros(input_data.size()[0], device=model.DEVICE)
 
 
   for step in range(input_data.size()[2]):#i.e per ogni step di ricostruzione
@@ -123,8 +126,7 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
     for (input, lbls) in _dataloader:
       
       with torch.no_grad():
-        pred_vals=VGG_cl(input)
-      #return pred_vals
+        pred_vals=VGG_cl(input) #predizioni del classificatore
       
       Pred_entropy = torch.distributions.Categorical(probs =pred_vals[:,:10]).entropy()
       Pred_entropy_mat[index:index+Batch_sz,step] = Pred_entropy
@@ -202,16 +204,16 @@ def Classifier_accuracy(input_data, VGG_cl,model, labels=[], Batch_sz= 100, entr
 
      
 
-  result_dict = dict(); 
-  result_dict['Cl_pred_matrix'] = Cl_pred_matrix
-  result_dict['Cl_accuracy'] = acc
-  result_dict['digitwise_acc'] = digitwise_acc
-  result_dict['Pred_entropy_mat'] = Pred_entropy_mat
-  result_dict['MEAN_entropy'] = MEAN_entropy
-  result_dict['digitwise_entropy'] = digitwise_avg_entropy
+
+  input_dict['Cl_pred_matrix'] = Cl_pred_matrix
+  input_dict['Cl_accuracy'] = acc
+  input_dict['digitwise_acc'] = digitwise_acc
+  input_dict['Pred_entropy_mat'] = Pred_entropy_mat
+  input_dict['MEAN_entropy'] = MEAN_entropy
+  input_dict['digitwise_entropy'] = digitwise_avg_entropy
 
    
-  return result_dict
+  return input_dict
 
 def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30, rounding=2, T_mat_labels=[], Ian=0):
   '''
