@@ -138,7 +138,10 @@ def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps 
       rows = math.floor(nr_steps/row_step) 
 
     cols = Generated_samples.shape[0]
-    if cols>1:
+
+    if cols>10:
+      figure, axis = plt.subplots(rows+1,10, figsize=(25*(10/10),2.5*(1+rows)))
+    elif cols>1:
       figure, axis = plt.subplots(rows+1,cols, figsize=(25*(cols/10),2.5*(1+rows)))
     else:
       figure, axis = plt.subplots(rows+1,cols+1, figsize=(25*(cols/10),2.5*(1+rows)))
@@ -204,4 +207,5 @@ def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps 
     #plt.savefig("Reconstuct_plot.jpg") #il salvataggio è disabilitato
 
     plt.show()
+
 
