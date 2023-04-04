@@ -174,7 +174,7 @@ def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps 
 
             #plotto la ricostruzione
 
-            reconstructed_img= Generated_samples[c,:,step-1] #step-1 perchè 0 è la prima ricostruzione
+            reconstructed_img= Generated_samples[sample_idx,:,step-1] #step-1 perchè 0 è la prima ricostruzione
             reconstructed_img = reconstructed_img.view((28,28)).cpu()
             axis[idx, c].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
