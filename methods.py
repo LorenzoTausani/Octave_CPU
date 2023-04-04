@@ -62,28 +62,31 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature[step])
             else:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
+
+            if model.Hidden_mode=='binary': #If the hidden layer is set to be binary...
+
+                if consider_top_k_units < hidden_layer_size: #if we want to consider just the top k units in the hidden layer...
+
+                    #get the indices (idxs) of the smallest (i.e., least probable) units in hid_prob[:,:,step]
+                    #Idxs size: numcases x (hidden_layer_size - consider_top_k_units)
+                    vs, idxs = torch.topk(hid_prob[:,:,step], (hidden_layer_size - consider_top_k_units), largest = False) 
+
+                    b = copy.deepcopy(hid_prob[:,:,step]) # b is a deepcopy of the original hid_prob[:,:,step]
+
+
+                    for row in range(numcases): # for every sample of b...
+                        b[row, idxs[row,:]]=0 #set the indices of the smallest (hidden_layer_size - consider_top_k_units) units to 0
+
+                    hid_states[:,:,step] = torch.bernoulli(b) #do the bernoullian sampling
+                else:
+                    hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
+            else:
+                hid_states[:,:,step] = hid_prob[:,:,step] #if the hidden layer is set to be continous, avoid the bernoullian sampling
+
         else: #if it is the 1st step of generation...
             hid_prob[:,:,step]  = input_hid_prob #the hidden probability is the one in the input
+            hid_states[:,:,step]  = input_hid_prob #the hidden probability is the one in the input
 
-        if model.Hidden_mode=='binary': #If the hidden layer is set to be binary...
-
-            if consider_top_k_units < hidden_layer_size: #if we want to consider just the top k units in the hidden layer...
-
-                #get the indices (idxs) of the smallest (i.e., least probable) units in hid_prob[:,:,step]
-                #Idxs size: numcases x (hidden_layer_size - consider_top_k_units)
-                vs, idxs = torch.topk(hid_prob[:,:,step], (hidden_layer_size - consider_top_k_units), largest = False) 
-
-                b = copy.deepcopy(hid_prob[:,:,step]) # b is a deepcopy of the original hid_prob[:,:,step]
-
-
-                for row in range(numcases): # for every sample of b...
-                    b[row, idxs[row,:]]=0 #set the indices of the smallest (hidden_layer_size - consider_top_k_units) units to 0
-
-                hid_states[:,:,step] = torch.bernoulli(b) #do the bernoullian sampling
-            else:
-                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
-        else:
-            hid_states[:,:,step] = hid_prob[:,:,step] #if the hidden layer is set to be continous, avoid the bernoullian sampling
 
         vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(model.vishid, 0, 1)) + model.visbiases #V(s) = H(s)*W + bV
         
@@ -115,3 +118,6 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
 
 
     return result_dict
+
+
+
