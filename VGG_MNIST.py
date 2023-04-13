@@ -94,7 +94,8 @@ class VGG16(nn.Module):
 def Classifier_accuracy(input_dict, VGG_cl,model, Thresholding_entropy=[], labels=[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
 
   #plot = 2 -> only digitwise accuracy
-  Thresholding_entropy = torch.mean(Thresholding_entropy) + 2*torch.std(Thresholding_entropy)
+  if Thresholding_entropy!=[]:
+    Thresholding_entropy = torch.mean(Thresholding_entropy) + 2*torch.std(Thresholding_entropy)
   input_data = input_dict['vis_states']
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
   
