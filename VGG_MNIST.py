@@ -91,10 +91,10 @@ class VGG16(nn.Module):
     return x
 
   
-def Classifier_accuracy(input_dict, VGG_cl,model, labels=[], Batch_sz= 100, entropy_correction=0, plot=1, dS=30, l_sz=3):
+def Classifier_accuracy(input_dict, VGG_cl,model, Thresholding_entropy=[], labels=[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
 
   #plot = 2 -> only digitwise accuracy
-
+  Thresholding_entropy = torch.mean(Thresholding_entropy) + 2*torch.std(Thresholding_entropy)
   input_data = input_dict['vis_states']
   #input_data = nr_examples x 784 (i.e. image size) x nr_steps
   
@@ -150,11 +150,11 @@ def Classifier_accuracy(input_dict, VGG_cl,model, labels=[], Batch_sz= 100, entr
   MEAN_entropy = torch.mean(Pred_entropy_mat,0)
   SEM_entropy = torch.std(Pred_entropy_mat,0)/math.sqrt(input_data.size()[0])
 
-  if entropy_correction==1:
-     Entropy_mat_NN = Pred_entropy_mat[Cl_pred_matrix==10]
-     NN_mean_entropy = Entropy_mat_NN.mean()
-     NN_std_entropy = Entropy_mat_NN.std()
-     Cl_pred_matrix[Pred_entropy_mat>=(NN_mean_entropy-NN_std_entropy)]=10
+  if Thresholding_entropy!=[]:
+    #  Entropy_mat_NN = Pred_entropy_mat[Cl_pred_matrix==10]
+    #  NN_mean_entropy = Entropy_mat_NN.mean()
+    #  NN_std_entropy = Entropy_mat_NN.std()
+     Cl_pred_matrix[Pred_entropy_mat>=Thresholding_entropy]=10
 
      Lab_mat= labels.unsqueeze(1).expand(len(labels), input_data.size()[2])
 
