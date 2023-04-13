@@ -126,16 +126,14 @@ class Intersection_analysis:
       #b_vec = torch.unsqueeze(b_vec,0)
       
       d= self.model.reconstruct_from_hidden(b_vec, self.nr_steps,temperature=temperature)
-
       
-      reconstructed_imgs=d['vis_states']
-      d_cl = Classifier_accuracy(reconstructed_imgs, VGG_cl, self.model, plot=plot, entropy_correction=entropy_correction)
-      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d_cl,self.model, Plot=plot, Ian=1)
+      d = Classifier_accuracy(d, VGG_cl, self.model, plot=plot, Thresholding_entropy=entropy_correction)
+      df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,self.model, Plot=plot, Ian=1)
       
       if nr_of_examples < 16:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
-      return d, d_cl, df_average,df_sem, Transition_matrix_rowNorm
+      return d, df_average,df_sem, Transition_matrix_rowNorm
 
 
 def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=1, lS=20):
