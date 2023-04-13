@@ -2,14 +2,17 @@ import torch
 import random
 import VGG_MNIST
 import plotting_functions
+import methods
 from VGG_MNIST import *
 from plotting_functions import *
+from methods import *
 from google.colab import files
 import pandas as pd
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import seaborn as sns
+from itertools import combinations
 
 def mean_h_prior(model):
   mean_h_prob_mat = torch.zeros(model.Num_classes+1,model.layersize[0]).to(model.DEVICE)
@@ -136,10 +139,7 @@ class Intersection_analysis:
       return d, df_average,df_sem, Transition_matrix_rowNorm
 
 
-def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=1, lS=20):
-    n_digits = Ian.model.Num_classes
-    fN='Visited_digits_k' + str(Ian.top_k_Hidden)+'.xlsx'
-    fNerr='Visited_digits_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
+def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=[], lS=20):
     def save_mat_xlsx(my_array, filename='my_res.xlsx'):
         # create a pandas dataframe from the numpy array
         my_dataframe = pd.DataFrame(my_array)
@@ -149,18 +149,41 @@ def Chimeras_nr_visited_states(Ian,VGG_cl,apprx=1,plot=1,compute_new=1, nr_sampl
         # download the file
         files.download(filename)
 
+    n_digits = model.Num_classes
+    if Ian!=[]:
+      fN='Visited_digits_k' + str(Ian.top_k_Hidden)+'.xlsx'
+      fNerr='Visited_digits_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
+    else:
+      fN='Visited_digits_Lbiasing_k' + str(topk)+'.xlsx'
+      fNerr='Visited_digits_Lbiasing_error_k' + str(topk)+'.xlsx'
+
     if compute_new==1:
+      #both
       Vis_states_mat = np.zeros((n_digits, n_digits))
       Vis_states_err = np.zeros((n_digits, n_digits))
+      if Ian!=[]:
+        for row in range(n_digits):
+          for col in range(row,n_digits):
+            d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = nr_sample_generated, temperature = 1, plot=0, entropy_correction= entropy_correction)
+            Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
+            Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
+      else:
+        numbers = list(range(n_digits))
+        combinations_of_two = list(combinations(numbers, 2))
 
-      for row in range(n_digits):
-        for col in range(row,n_digits):
-          d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = nr_sample_generated, temperature = 1, plot=0, entropy_correction= entropy_correction)
-          Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
-          Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
+        for idx, combination in enumerate(combinations_of_two):
+          gen_hidden = label_biasing(model, on_digits=  list(combination), topk = topk)
+          gen_hidden_rep = gen_hidden.repeat(1,nr_sample_generated)
+          d = generate_from_hidden(model, gen_hidden_rep , nr_gen_steps=100, temperature=1, consider_top_k_units = 1000, include_energy = 0)
+          d = Classifier_accuracy(d, VGG_cl,model, Thresholding_entropy=entropy_correction, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
+          df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,model,Plot=0,dS=50,Ian=1)
+          Vis_states_mat[combination[0],combination[1]]=df_average.Nr_visited_states[0]
+          Vis_states_err[combination[0],combination[1]]=df_sem.Nr_visited_states[0]
+
 
       save_mat_xlsx(Vis_states_mat, filename=fN)
       save_mat_xlsx(Vis_states_err, filename=fNerr)
+
 
     else: #load already computed Vis_states_mat
       Vis_states_mat = pd.read_excel(fN)
