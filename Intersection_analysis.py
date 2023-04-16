@@ -200,7 +200,7 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       Vis_states_err = Vis_states_err.round(apprx)
 
       plt.figure(figsize=(15, 15))
-      mask = np.triu(np.ones_like(Vis_states_mat))
+      mask = np.triu(np.ones_like(Vis_states_mat),k=+1) # k=+1 per rimuovere la diagonale
       # Set the lower triangle to NaN
       Vis_states_mat = np.where(mask==0, np.nan, Vis_states_mat)
       Vis_states_mat = Vis_states_mat.T

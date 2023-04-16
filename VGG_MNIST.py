@@ -367,7 +367,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   return df_average, df_sem, Transition_matrix_rowNorm
 
 
-def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
+def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=25):
 
 
         plt.figure(figsize=(15, 15))
@@ -385,7 +385,7 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=18):
         plt.show()
 
 
-def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=20):
+def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=25):
       plt.figure(figsize=(15, 15))
       Transition_matrix=Transition_matrix_rowNorm*100
       ax = sns.heatmap(torch.round(Transition_matrix, decimals=2), linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
