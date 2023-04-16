@@ -122,7 +122,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
 
     return result_dict
 
-def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps = True, Show_classification = False):
+def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps = True, Show_classification = False, not_random_idxs = True):
     
     Generated_samples=input_dict['vis_states']
     nr_steps = Generated_samples.shape[2]
@@ -147,7 +147,10 @@ def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps 
       figure, axis = plt.subplots(rows+1,cols+1, figsize=(25*(cols/10),2.5*(1+rows)))
 
     if cols >= 10:
-      random_numbers = random.sample(range(cols), 10) # 10 random samples are selected
+      if not_random_idxs ==True:
+        random_numbers = range(10)
+      else:
+        random_numbers = random.sample(range(cols), 10) # 10 random samples are selected
     else:
       random_numbers = random.sample(range(cols), cols) # 10 random samples are selected
 
