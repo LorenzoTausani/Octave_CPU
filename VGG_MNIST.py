@@ -355,7 +355,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           #plt.title("Classification_metrics-2",fontsize=dS)
           
           plt.ylabel("Average nr of steps",fontsize=dS)
-          plt.ylim([0,100])
+          plt.ylim([0,50])
           #plt.legend(bbox_to_anchor=(1.04,1), loc="upper left", fontsize=dS)
 
           # Put a legend below current axis
