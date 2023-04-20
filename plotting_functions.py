@@ -550,55 +550,95 @@ def Comparison_VH_LayerState(sample_test_data,sample_test_labels, nr_steps, temp
   return dict_VHstate_nrTransitions, dict_VHstate_nrVisitedSts, dict_VHstate_toNoNum
 
 
-def hidden_states_analysis(d_Reconstruct_t1_allH,d_cl, dS=30, aspect_ratio = 2.5):
+def hidden_states_analysis(d_Reconstruct_t1_allH=[], d_cl=[], Lbl_biasing_probs =[], dS=30, aspect_ratio = 2.5):
   '''
   INPUTS: d_Reconstruct_t1_allH: dictionary obtrained from the reconstruct method of the RBM. It includes visible and hidden states obtained in the generation
   d_cl: dictionary obtained from the classifier accuracy function. It includes the classifications of generated samples
   '''
-  average_Hid = torch.zeros(11,1000)
-  Active_hid = torch.zeros(11,1)
-  Active_hid_SEM = torch.zeros(11,1)
-  #for every digit and non-digit class (total:11 classes)...
-  for class_of_interest in range(11):
-    # Create a tensor of zeros with nrows equal to the number of elements classified as the class of interest, 
-    # and 1000 columns (i.e. the number of hidden units of the net)
-    Non_num_Hid = torch.zeros(torch.sum(d_cl['Cl_pred_matrix']==class_of_interest),1000)
+  def single_boxplot(Hid_probs, Color):
+    df = pd.DataFrame(torch.transpose(Hid_probs,0,1).cpu().numpy())
+    distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=aspect_ratio, palette=Color)
+    distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
+    _, ylabels = plt.yticks()
+    distr_percAct_units.set_yticklabels(ylabels, size=dS)
+    _, xlabels = plt.xticks()
+    distr_percAct_units.set_xticklabels(xlabels, size=dS)
+    plt.ylim(0, 1)
 
-    counter = 0
-    for example in range(1000): #1000 dovrebbe essere il numero totale di campioni generati. Potrebbe essere fatta non hardcoded
-      for step in range(100): #nr of generation step
-        # Check if the example belongs to the class_of_interest at generation step "step"
-        if (d_cl['Cl_pred_matrix']==class_of_interest)[example,step]==True: 
-          Non_num_Hid[counter,:]=d_Reconstruct_t1_allH['hid_states'][example,:,step] #insert the corresponding hidden state vector at index "counter"
-          counter+=1
+    #OLD PLOT QUANTIFYiNG avg nr of hidden units active before a certain digit
+    # fig, ax = plt.subplots(figsize=(15,10))
 
-    average_Hid[class_of_interest,:]=torch.mean(Non_num_Hid,0) #columnwise average of Non_num_Hid -> P(h=1)
-    Active_hid[class_of_interest] = torch.mean(torch.sum(Non_num_Hid,1)) #mean of the sum of elements along the second dimension (axis=1) of a tensor called "Non_num_Hid"
-    Active_hid_SEM[class_of_interest] = torch.std(torch.sum(Non_num_Hid,1))/np.sqrt(torch.sum(Non_num_Hid,1).size()[0])
-    #print(torch.std(torch.sum(Non_num_Hid,1)),np.sqrt(torch.sum(Non_num_Hid,1).size()[0]) )
+    # rects1 = ax.bar(range(11),Active_hid,yerr=Active_hid_SEM, color=Color)
+    # ax.set_xlabel('Digit state', fontsize = dS)
+    # ax.set_ylabel('Nr of active units', fontsize = dS)
+    # ax.set_xticks(range(11))
+    # ax.tick_params( labelsize= dS) 
+    # ax.set_ylim(0,1000)
 
-  #plot P(h=1) distribution
-  df = pd.DataFrame(torch.transpose(average_Hid,0,1).numpy())
+  #colori per il plotting
   cmap = cm.get_cmap('hsv') # inizializzo la colormap che utilizzerò per il plotting
-  
   Color = cmap(np.linspace(0, 250, num=11)/256)
   Color[-1]=np.array([0.1, 0.1, 0.1, 1])
-  distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=aspect_ratio, palette=Color)
-  distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
-  _, ylabels = plt.yticks()
-  distr_percAct_units.set_yticklabels(ylabels, size=dS)
-  _, xlabels = plt.xticks()
-  distr_percAct_units.set_xticklabels(xlabels, size=dS)
-  plt.ylim(0, 1)
 
-  fig, ax = plt.subplots(figsize=(15,10))
+  if Lbl_biasing_probs != []:
+    Lbl_biasing_probs = torch.transpose(Lbl_biasing_probs,0,1)
+    #plot P(h=1) distribution
+    single_boxplot(Lbl_biasing_probs, Color)
 
-  rects1 = ax.bar(range(11),Active_hid,yerr=Active_hid_SEM, color=Color)
-  ax.set_xlabel('Digit state', fontsize = dS)
-  ax.set_ylabel('Nr of active units', fontsize = dS)
-  ax.set_xticks(range(11))
-  ax.tick_params( labelsize= dS) 
-  ax.set_ylim(0,1000)
+  if d_Reconstruct_t1_allH!=[]:
+    average_Hid = torch.zeros(11,1000, device='cuda')
+    Active_hid = torch.zeros(11,1, device='cuda')
+    Active_hid_SEM = torch.zeros(11,1, device='cuda')
+    #for every digit and non-digit class (total:11 classes)...
+    for class_of_interest in range(11):
+      # Create a tensor of zeros with nrows equal to the number of elements classified as the class of interest, 
+      # and 1000 columns (i.e. the number of hidden units of the net)
+      Non_num_Hid = torch.zeros(torch.sum(d_cl['Cl_pred_matrix']==class_of_interest),1000)
+
+      counter = 0
+      for example in range(1000): #1000 dovrebbe essere il numero totale di campioni generati. Potrebbe essere fatta non hardcoded
+        for step in range(100): #nr of generation step
+          # Check if the example belongs to the class_of_interest at generation step "step"
+          if (d_cl['Cl_pred_matrix']==class_of_interest)[example,step]==True: 
+            Non_num_Hid[counter,:]=d_Reconstruct_t1_allH['hid_states'][example,:,step] #insert the corresponding hidden state vector at index "counter"
+            counter+=1
+
+      average_Hid[class_of_interest,:]=torch.mean(Non_num_Hid,0) #columnwise average of Non_num_Hid -> P(h=1)
+      Active_hid[class_of_interest] = torch.mean(torch.sum(Non_num_Hid,1)) #mean of the sum of elements along the second dimension (axis=1) of a tensor called "Non_num_Hid"
+      Active_hid_SEM[class_of_interest] = torch.std(torch.sum(Non_num_Hid,1))/np.sqrt(torch.sum(Non_num_Hid,1).size()[0])
+      #print(torch.std(torch.sum(Non_num_Hid,1)),np.sqrt(torch.sum(Non_num_Hid,1).size()[0]) )
+
+    #plot P(h=1) distribution
+    single_boxplot(average_Hid, Color)
+
+  
+  if Lbl_biasing_probs != [] and d_Reconstruct_t1_allH!=[]:
+    pattern = torch.arange(11).repeat_interleave(1000)
+    concatenated_tensor = torch.cat((average_Hid.view(-1), Lbl_biasing_probs.reshape(-1)), dim=0)
+    concatenated_labels = torch.cat((pattern, pattern[:10000]), dim=0)
+    type_vec = ['dataset'] * 11000+['label biasing']*10000
+
+    data_dict = {'P(h=1)': concatenated_tensor.cpu(), 'Digit state': concatenated_labels.cpu(), 'tipo': type_vec}
+    dat_f = pd.DataFrame(data_dict)
+    
+    Color = np.repeat(Color, 2, axis=0)  # repeat each element twice along the first axis
+    Color[1::2, 3] = 0.4
+
+    Color=Color[:-1,:]
+    fig, ax = plt.subplots(figsize=(5*2.5, 5))
+    sns.boxplot(x='Digit state', y='P(h=1)', hue='tipo',
+                 data=dat_f)
+
+    import matplotlib.patches
+    boxes = ax.findobj(matplotlib.patches.PathPatch)
+    for color, box in zip(Color, boxes):
+        box.set_facecolor(color)
+    ax.legend_.remove()
+    ax.tick_params(labelsize= 30) 
+    ax.set_ylabel('P(h=1)',fontsize = dS)
+    ax.set_xlabel('Digit state',fontsize = dS)
+    ax.set_ylim(0,1)
+    plt.plot()
 
   return average_Hid, Active_hid, Active_hid_SEM
 
