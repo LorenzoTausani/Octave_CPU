@@ -625,7 +625,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH=[], d_cl=[], Lbl_biasing_probs 
     Color[1::2, 3] = 0.4
 
     Color=Color[:-1,:]
-    fig, ax = plt.subplots(figsize=(5*2.5, 5))
+    fig, ax = plt.subplots(figsize=(5*aspect_ratio, 5))
     sns.boxplot(x='Digit state', y='P(h=1)', hue='tipo',
                  data=dat_f)
 

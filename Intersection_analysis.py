@@ -208,13 +208,13 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
 
       #ax.set_xticklabels(T_mat_labels)
-      ax.tick_params(axis='both', labelsize=20)
+      ax.tick_params(axis='both', labelsize=lS)
 
       plt.xlabel('Digit', fontsize = 25) # x-axis label with fontsize 15
       plt.ylabel('Digit', fontsize = 25) # y-axis label with fontsize 15
       #cbar = plt.gcf().colorbar(ax.collections[0], location='left', shrink=0.82)
       cbar = ax.collections[0].colorbar
-      cbar.ax.tick_params(labelsize=20)
+      cbar.ax.tick_params(labelsize=lS)
       plt.show()
 
     return Vis_states_mat, Vis_states_err
