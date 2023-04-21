@@ -222,11 +222,18 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
              y_lbl = 'Activation (L2) norm'
 
         else: #perc_act_H
+
+
             gen_H_digit = gen_data_dictionary['hid_states'][l[0],:,:]
             nr_steps = gen_H_digit.size()[2]
+            if digit == 0:
+                Mean_storing = torch.zeros(model.Num_classes,nr_steps, device = 'cuda')
+                Sem_storing = torch.zeros(model.Num_classes,nr_steps, device = 'cuda')
             SEM = torch.std(torch.mean(gen_H_digit,1)*100,0)/math.sqrt(nr_examples)
             MEAN = torch.mean(torch.mean(gen_H_digit,1)*100,0).cpu()
-            
+            Mean_storing[digit, : ] = MEAN.cuda()
+            Sem_storing[digit, : ] = SEM
+
             if digit==0: #evito di fare sta operazione più volte
              y_lbl = '% active H units'
 
@@ -251,6 +258,8 @@ def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_d
     elif metric_type=='perc_act_H':
       axis.set_ylim([0,100])
     #DA FARE SETTARE LIMITI ASSE Y
+    if metric_type=='perc_act_H':
+      return Mean_storing, Sem_storing
 
 
 def Average_metrics_plot(model,gen_data_dictionary=[], Intersection_analysis = [],sample_test_data = [], metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False,temperature=1, single_line_plot=True):
