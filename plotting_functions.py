@@ -564,14 +564,17 @@ def hidden_states_analysis(d_Reconstruct_t1_allH=[], d_cl=[], Lbl_biasing_probs 
   INPUTS: d_Reconstruct_t1_allH: dictionary obtrained from the reconstruct method of the RBM. It includes visible and hidden states obtained in the generation
   d_cl: dictionary obtained from the classifier accuracy function. It includes the classifications of generated samples
   '''
-  def single_boxplot(Hid_probs, Color):
+  tick_labels = ['0','1','2','3','4','5','6','7','8','9','Non\ndigit']
+
+  def single_boxplot(Hid_probs, Color, x_labels = tick_labels):
     df = pd.DataFrame(torch.transpose(Hid_probs,0,1).cpu().numpy())
     distr_percAct_units = sns.catplot(data=df,  kind="box", height=5, aspect=aspect_ratio, palette=Color)
     distr_percAct_units.set_axis_labels("Digit state", "P(h=1)", fontsize=dS)
     _, ylabels = plt.yticks()
     distr_percAct_units.set_yticklabels(ylabels, size=dS)
-    _, xlabels = plt.xticks()
-    distr_percAct_units.set_xticklabels(xlabels, size=dS)
+    #_, xlabels = plt.xticks()
+
+    distr_percAct_units.set_xticklabels(x_labels, size=dS)
     plt.ylim(0, 1)
 
     #OLD PLOT QUANTIFYiNG avg nr of hidden units active before a certain digit
@@ -592,7 +595,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH=[], d_cl=[], Lbl_biasing_probs 
   if Lbl_biasing_probs != []:
     Lbl_biasing_probs = torch.transpose(Lbl_biasing_probs,0,1)
     #plot P(h=1) distribution
-    single_boxplot(Lbl_biasing_probs, Color)
+    single_boxplot(Lbl_biasing_probs, Color, x_labels = [x for x in tick_labels if x != 'Non\ndigit'])
 
   if d_Reconstruct_t1_allH!=[]:
     average_Hid = torch.zeros(11,1000, device='cuda')
@@ -644,6 +647,7 @@ def hidden_states_analysis(d_Reconstruct_t1_allH=[], d_cl=[], Lbl_biasing_probs 
         box.set_facecolor(color)
     ax.legend_.remove()
     ax.tick_params(labelsize= 30) 
+    ax.set_xticklabels(tick_labels, size=dS)
     ax.set_ylabel('P(h=1)',fontsize = dS)
     ax.set_xlabel('Digit state',fontsize = dS)
     ax.set_ylim(0,1)
