@@ -158,8 +158,8 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
     else:
       fN='Visited_digits_Lbiasing_k' + str(topk)+'.xlsx'
       fNerr='Visited_digits_Lbiasing_error_k' + str(topk)+'.xlsx'
-      fN_NDST='Nondigit_stateTime_Lbiasing_k' + str(Ian.top_k_Hidden)+'.xlsx'
-      fNerr_NDST='Nondigit_stateTime_Lbiasing_error_k' + str(Ian.top_k_Hidden)+'.xlsx'
+      fN_NDST='Nondigit_stateTime_Lbiasing_k' + str(topk)+'.xlsx'
+      fNerr_NDST='Nondigit_stateTime_Lbiasing_error_k' + str(topk)+'.xlsx'
 
     if compute_new==1:
       #both
