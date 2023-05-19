@@ -145,7 +145,7 @@ class DBN():
         posvisact    = torch.sum(data_mb,0)
         #END OF POSITIVE PHASE
         
-        if self.self.NReLU==True:
+        if self.NReLU==True:
             torch.nn.ReLU(H_act+torch.normal(0,poshidprobs))
         else:
             poshidstates = torch.bernoulli(poshidprobs)
