@@ -146,7 +146,7 @@ class DBN():
         #END OF POSITIVE PHASE
         
         if self.NReLU==True:
-            torch.nn.ReLU(H_act+torch.normal(0,poshidprobs))
+            poshidstates = torch.nn.ReLU(H_act+torch.normal(0,poshidprobs))
         else:
             poshidstates = torch.bernoulli(poshidprobs)
 
