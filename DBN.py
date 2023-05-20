@@ -33,8 +33,7 @@ class DBN():
                 Num_classes = 10,
                 Hidden_mode = 'binary',
                 bin_threshold = 0.5,
-                Visible_mode='continous',
-                NReLU=True): #alternative: binary, leaky_binary
+                Visible_mode='continous'): #alternative: binary, leaky_binary
 
         self.nlayers = len(layersize)
         self.rbm_layers =[] #decidi che farci
@@ -54,7 +53,6 @@ class DBN():
         self.Visible_mode = Visible_mode
         self.Hidden_mode = Hidden_mode
         self.bin_threshold = bin_threshold
-        self.NReLU = NReLU
 
 
 
@@ -136,7 +134,6 @@ class DBN():
     def train_RBM(self,data_mb,numcases, epoch):
         momentum = self.init_momentum
         #START POSITIVE PHASE
-        
         H_act = torch.matmul(data_mb,self.vishid)
         H_act = torch.add(H_act, self.hidbiases) #W.x + c
         poshidprobs = torch.sigmoid(H_act)
@@ -144,11 +141,7 @@ class DBN():
         poshidact    = torch.sum(poshidprobs,0)
         posvisact    = torch.sum(data_mb,0)
         #END OF POSITIVE PHASE
-        
-        if self.NReLU==True:
-            poshidstates = torch.nn.ReLU(H_act+torch.normal(0,poshidprobs))
-        else:
-            poshidstates = torch.bernoulli(poshidprobs)
+        poshidstates = torch.bernoulli(poshidprobs)
 
         #START NEGATIVE PHASE
         N_act = torch.matmul(poshidstates,torch.transpose(self.vishid, 0, 1))
@@ -589,4 +582,3 @@ class DBN():
         self.Wass_mat = Wass_mat
         
         return Wass_mat
-
