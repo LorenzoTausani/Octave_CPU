@@ -69,7 +69,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
     input_data: possono essere o dataset da ricostruire (in tal caso d_type='example'), o visible ottenuti da label biasing (in tal caso d_type='lbl_biasing')
     o dati già ricostruiti (in tal caso d_type='reconstructed'), o un input hidden unit activation (in tal caso d_type='hidden')
     '''
-
+    img_side = int(np.sqrt(input_data.shape[1]))
     rows = math.floor(nr_steps/row_step) #calcolo il numero di rows che dovrà avere il mio plot
     steps=[2,3,4,5,10,25,50,100]
     if custom_steps:
@@ -96,7 +96,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         else:
           
           figure, axis = plt.subplots(rows+1,cols, figsize=(25,2.5*(1+rows)))
-          orig_data = input_data.view((10,28,28))
+          orig_data = input_data.view((len(torch.unique(model.TRAIN_lbls)),img_side,img_side))
           d= model.reconstruct(orig_data,nr_steps, temperature=temperature, consider_top=consider_top) #faccio la ricostruzione
         input_data=d['vis_states'] #estraggo le immagini ricostruite
     
@@ -128,7 +128,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
         # plotto la ricostruzione dopo uno step
         if not(d_type=='lbl_biasing'):
           reconstructed_img= input_data[lbl,:,0] #estraggo la prima immagine ricostruita per il particolare esempio (lbl può essere un nome un po fuorviante)
-          reconstructed_img = reconstructed_img.view((28,28)).cpu() #ridimensiono l'immagine e muovo su CPU
+          reconstructed_img = reconstructed_img.view((img_side,img_side)).cpu() #ridimensiono l'immagine e muovo su CPU
           axis[before, lbl].tick_params(left = False, right = False , labelleft = False ,
               labelbottom = False, bottom = False)
           axis[before, lbl].imshow(reconstructed_img , cmap = 'gray')
@@ -147,7 +147,7 @@ def Reconstruct_plot(input_data, model, nr_steps=100, temperature= 1,row_step = 
             #plotto la ricostruzione
 
             reconstructed_img= input_data[lbl,:,step-1] #step-1 perchè 0 è la prima ricostruzione
-            reconstructed_img = reconstructed_img.view((28,28)).cpu()
+            reconstructed_img = reconstructed_img.view((img_side,img_side)).cpu()
             axis[idx, lbl].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
             axis[idx, lbl].imshow(reconstructed_img , cmap = 'gray')

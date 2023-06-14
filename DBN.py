@@ -330,8 +330,9 @@ class DBN():
         '''
 
         tr_patterns = torch.squeeze(self.TRAIN_gen_hid_states)
+        n_cl = len(torch.unique(self.TRAIN_lbls))
 
-        L = torch.zeros(self.Num_classes,len(tr_patterns)).to(self.DEVICE)
+        L = torch.zeros(n_cl,len(tr_patterns)).to(self.DEVICE)
         c=0
         for lbl in self.TRAIN_lbls:
             L[lbl,c]=1
@@ -339,7 +340,7 @@ class DBN():
 
         
         weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
-        lbl_mat=torch.eye(10).to(self.DEVICE)
+        lbl_mat=torch.eye(n_cl).to(self.DEVICE)
 
         gen_hidden_act = torch.matmul(torch.transpose(weights_inv,0,1),lbl_mat)
 
