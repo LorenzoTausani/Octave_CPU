@@ -338,8 +338,10 @@ class DBN():
             L[lbl,c]=1
             c=c+1
 
-        
-        weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
+        if not(hasattr(self, 'my_attribute')):
+            weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
+        else:
+            weights_inv = self.weights_inv
         lbl_mat=torch.eye(n_cl).to(self.DEVICE)
 
         gen_hidden_act = torch.matmul(torch.transpose(weights_inv,0,1),lbl_mat)
