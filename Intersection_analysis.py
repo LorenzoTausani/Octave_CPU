@@ -102,10 +102,10 @@ class Intersection_analysis:
 
       print(digit_digit_common_elements_count_biasing)
       print(digit_digit_common_elements_count_hidAvg)
-      lbl_bias_freqV = digit_digit_common_elements_count_biasing.view(100)/torch.sum(digit_digit_common_elements_count_biasing.view(100))
-      avgH_bias_freqV = digit_digit_common_elements_count_hidAvg.view(100)/torch.sum(digit_digit_common_elements_count_hidAvg.view(100))
+      #lbl_bias_freqV = digit_digit_common_elements_count_biasing.view(100)/torch.sum(digit_digit_common_elements_count_biasing.view(100))
+      #avgH_bias_freqV = digit_digit_common_elements_count_hidAvg.view(100)/torch.sum(digit_digit_common_elements_count_hidAvg.view(100))
 
-      print(scipy.stats.chisquare(lbl_bias_freqV, f_exp=avgH_bias_freqV))
+      #print(scipy.stats.chisquare(lbl_bias_freqV, f_exp=avgH_bias_freqV))
 
 
       return digit_digit_common_elements_count_biasing, digit_digit_common_elements_count_hidAvg
