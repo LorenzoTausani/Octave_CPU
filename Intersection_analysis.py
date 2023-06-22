@@ -234,8 +234,8 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       #ax.set_xticklabels(T_mat_labels)
       ax.tick_params(axis='both', labelsize=lS)
 
-      plt.xlabel('Class', fontsize = 25) # x-axis label with fontsize 15
-      plt.ylabel('Class', fontsize = 25) # y-axis label with fontsize 15
+      plt.xlabel('Class', fontsize = lS) # x-axis label with fontsize 15
+      plt.ylabel('Class', fontsize = lS) # y-axis label with fontsize 15
       #cbar = plt.gcf().colorbar(ax.collections[0], location='left', shrink=0.82)
       cbar = ax.collections[0].colorbar
       cbar.ax.tick_params(labelsize=lS)
