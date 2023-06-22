@@ -42,9 +42,9 @@ class Intersection_analysis:
       vettore_indici_allDigits_biasing = torch.empty((0),device= self.model.DEVICE)
       vettore_indici_allDigits_hidAvg = torch.empty((0),device= self.model.DEVICE)
 
-      for digit in range(self.model.Num_classes): #per ogni digit
-        hid_vec_B = hid_bias[:,digit] #questo è l'hidden state ottenuto con il label biasing di un certo digit
-        hid_vec_HA = torch.squeeze(hidAvg[digit]) # hidden state medio a step 1 di un certo digit (hidden biasing)
+      for cl in range(self.model.Num_classes): #per ogni class
+        hid_vec_B = hid_bias[:,cl] #questo è l'hidden state ottenuto con il label biasing di un certo digit
+        hid_vec_HA = torch.squeeze(hidAvg[cl]) # hidden state medio a step 1 di un certo digit (hidden biasing)
         top_values_biasing, top_idxs_biasing = torch.topk(hid_vec_B, self.top_k_Hidden) #qui e la linea sotto  trovo i top p indici in termini di attività
         top_values_hidAvg, top_idxs_hidAvg = torch.topk(hid_vec_HA, self.top_k_Hidden)
 
@@ -57,8 +57,8 @@ class Intersection_analysis:
       #common_el_idxs_hidAvg = torch.empty((0),device= self.model.DEVICE)
       #common_el_idxs_biasing = torch.empty((0),device= self.model.DEVICE)
 
-      digit_digit_common_elements_count_biasing = torch.zeros((10,10))
-      digit_digit_common_elements_count_hidAvg = torch.zeros((10,10))
+      digit_digit_common_elements_count_biasing = torch.zeros((self.model.Num_classes,self.model.Num_classes))
+      digit_digit_common_elements_count_hidAvg = torch.zeros((self.model.Num_classes,self.model.Num_classes))
 
       self.unique_H_idxs_biasing = unique_idxs_biasing
       self.unique_H_idxs_hidAvg = unique_idxs_hidAvg
@@ -113,15 +113,15 @@ class Intersection_analysis:
 
 
     def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000, plot=0, entropy_correction=1):
-      b_vec =torch.zeros(nr_of_examples,1000)
+      b_vec =torch.zeros(nr_of_examples,self.model.layersize[0])
       if not(elements_of_interest =='rand'):
         dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
         b_vec[:,self.result_dict_biasing[dictionary_key].long()]=1
 
       else: #write 'rand' in elements of interest
         for i in range(nr_of_examples):
-          n1 = random.randint(0, 9)
-          n2 = random.randint(0, 9)
+          n1 = random.randint(0, self.model.Num_classes-1)
+          n2 = random.randint(0, self.model.Num_classes-1)
           dictionary_key = str(n1)+','+str(n2)
           b_vec[i,self.result_dict_biasing[dictionary_key].long()]=1
 
@@ -165,8 +165,9 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       #both
       Vis_states_mat = np.zeros((n_digits, n_digits))
       Vis_states_err = np.zeros((n_digits, n_digits))
-      Non_digit_mat  = np.zeros((n_digits, n_digits))
-      Non_digit_err  = np.zeros((n_digits, n_digits))
+      if n_digits==10:
+        Non_digit_mat  = np.zeros((n_digits, n_digits))
+        Non_digit_err  = np.zeros((n_digits, n_digits))
 
       if Ian!=[]:
         for row in range(n_digits):
@@ -174,8 +175,9 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
             d, df_average,df_sem, Transition_matrix_rowNorm = Ian.generate_chimera_lbl_biasing(VGG_cl,elements_of_interest = [row,col], nr_of_examples = nr_sample_generated, temperature = 1, plot=0, entropy_correction= entropy_correction)
             Vis_states_mat[row,col]=df_average.Nr_visited_states[0]
             Vis_states_err[row,col]=df_sem.Nr_visited_states[0]
-            Non_digit_mat[row,col] = df_average['Non-digit'][0]
-            Non_digit_err[row,col] = df_sem['Non-digit'][0]
+            if n_digits==10:
+              Non_digit_mat[row,col] = df_average['Non-digit'][0]
+              Non_digit_err[row,col] = df_sem['Non-digit'][0]
       else:
         numbers = list(range(n_digits))
         combinations_of_two = list(combinations(numbers, 2))
@@ -184,31 +186,35 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
           gen_hidden = label_biasing(model, on_digits=  list(combination), topk = topk)
           gen_hidden_rep = gen_hidden.repeat(1,nr_sample_generated)
           d = generate_from_hidden(model, gen_hidden_rep , nr_gen_steps=100, temperature=1, consider_top_k_units = 1000, include_energy = 0)
-          d = Classifier_accuracy(d, VGG_cl,model, Thresholding_entropy=entropy_correction, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
+          #d = Classifier_accuracy(d, VGG_cl,model, Thresholding_entropy=entropy_correction, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
+          d = Classifier_accuracy(d, VGG_cl,model, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
           df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,model,Plot=0,dS=50,Ian=1)
           Vis_states_mat[combination[0],combination[1]]=df_average.Nr_visited_states[0]
           Vis_states_err[combination[0],combination[1]]=df_sem.Nr_visited_states[0]
-          Non_digit_mat[combination[0],combination[1]] = df_average['Non-digit'][0]
-          Non_digit_err[combination[0],combination[1]] = df_sem['Non-digit'][0]
+          if n_digits==10:
+            Non_digit_mat[combination[0],combination[1]] = df_average['Non-digit'][0]
+            Non_digit_err[combination[0],combination[1]] = df_sem['Non-digit'][0]
 
 
       save_mat_xlsx(Vis_states_mat, filename=fN)
       save_mat_xlsx(Vis_states_err, filename=fNerr)
-      save_mat_xlsx(Non_digit_mat, filename=fN_NDST)
-      save_mat_xlsx(Non_digit_err, filename=fNerr_NDST)
+      if n_digits==10:
+        save_mat_xlsx(Non_digit_mat, filename=fN_NDST)
+        save_mat_xlsx(Non_digit_err, filename=fNerr_NDST)
 
     else: #load already computed Vis_states_mat
       Vis_states_mat = pd.read_excel(fN)
-      Non_digit_mat = pd.read_excel(fN_NDST)
+      Vis_states_err = pd.read_excel(fNerr)
       # Convert the DataFrame to a NumPy array
       Vis_states_mat = Vis_states_mat.values
-      Non_digit_mat = Non_digit_mat.values
-
-      Vis_states_err = pd.read_excel(fNerr)
-      Non_digit_err = pd.read_excel(fNerr_NDST)
-      # Convert the DataFrame to a NumPy array
       Vis_states_err = Vis_states_err.values
-      Non_digit_err = Non_digit_err.values
+
+      if n_digits==10:
+        Non_digit_mat = pd.read_excel(fN_NDST)
+        Non_digit_err = pd.read_excel(fNerr_NDST)
+        # Convert the DataFrame to a NumPy array
+        Non_digit_mat = Non_digit_mat.values
+        Non_digit_err = Non_digit_err.values
 
     if plot==1:
 
@@ -232,5 +238,7 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       cbar = ax.collections[0].colorbar
       cbar.ax.tick_params(labelsize=lS)
       plt.show()
-
-    return Vis_states_mat, Vis_states_err,Non_digit_mat,Non_digit_err
+    if n_digits==10:
+      return Vis_states_mat, Vis_states_err,Non_digit_mat,Non_digit_err
+    else:
+      return Vis_states_mat, Vis_states_err
