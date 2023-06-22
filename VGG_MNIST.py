@@ -325,7 +325,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           df_average.plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:, ['Nr_visited_states', 'Nr_transitions']],figsize=(30,10),fontsize=dS)
           plt.xlabel("Class",fontsize=dS)
           if not(model.Num_classes==10):
-            plt.xticks(range(model.Num_classes), T_mat_labels)
+            plt.xticks(range(model.Num_classes), T_mat_labels, rotation=0)
 
         else:
           df_average.iloc[0:1].plot(y=['Nr_visited_states', 'Nr_transitions'], kind="bar",yerr=df_sem.loc[:,['Nr_visited_states', 'Nr_transitions']],xticks=[], figsize=(20,10),fontsize=dS)
@@ -396,6 +396,8 @@ def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=25):
               T_mat_labels.append('Non\ndigit')
 
         ax.set_xticklabels(T_mat_labels)
+        if not(len(Trans_nr) == 11):
+          ax.set_yticklabels(T_mat_labels)
         ax.tick_params(axis='both', labelsize=lS)
 
         plt.xlabel('Class', fontsize = 25) # x-axis label with fontsize 15
