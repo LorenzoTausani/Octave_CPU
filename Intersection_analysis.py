@@ -139,7 +139,7 @@ class Intersection_analysis:
       return d, df_average,df_sem, Transition_matrix_rowNorm
 
 
-def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=[], lS=20):
+def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=[], cl_labels=[], lS=20):
     def save_mat_xlsx(my_array, filename='my_res.xlsx'):
         # create a pandas dataframe from the numpy array
         my_dataframe = pd.DataFrame(my_array)
@@ -228,12 +228,15 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
       Vis_states_mat = Vis_states_mat.T
       #ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=False,square=True, cbar=False)
       ax = sns.heatmap(Vis_states_mat, linewidth=0.5, annot=True, annot_kws={"size": lS},square=True,cbar_kws={"shrink": .82}, fmt='.1f', cmap='jet')
+      if not(cl_labels==[]):
+        ax.set_xticklabels(cl_labels)
+        ax.set_yticklabels(cl_labels)
 
       #ax.set_xticklabels(T_mat_labels)
       ax.tick_params(axis='both', labelsize=lS)
 
-      plt.xlabel('Digit', fontsize = 25) # x-axis label with fontsize 15
-      plt.ylabel('Digit', fontsize = 25) # y-axis label with fontsize 15
+      plt.xlabel('Class', fontsize = 25) # x-axis label with fontsize 15
+      plt.ylabel('Class', fontsize = 25) # y-axis label with fontsize 15
       #cbar = plt.gcf().colorbar(ax.collections[0], location='left', shrink=0.82)
       cbar = ax.collections[0].colorbar
       cbar.ax.tick_params(labelsize=lS)
