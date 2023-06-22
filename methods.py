@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import math
 import copy
 import random
@@ -37,6 +38,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
         n_times = math.ceil(nr_gen_steps/len(temperature))
         temperature = temperature*n_times
 
+    img_side = int(np.sqrt(model.vishid.shape[0]))
     #input_hid_prob has size Nr_hidden_units x num_cases. Therefore i transpose it
     input_hid_prob = torch.transpose(input_hid_prob,0,1)
 
@@ -47,17 +49,17 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
     hid_prob = torch.zeros(numcases,hidden_layer_size, nr_gen_steps, device=model.DEVICE)
     hid_states = torch.zeros(numcases,hidden_layer_size, nr_gen_steps, device=model.DEVICE)
 
-    vis_prob = torch.zeros(numcases, 784, nr_gen_steps, device=model.DEVICE)
-    vis_states = torch.zeros(numcases ,784, nr_gen_steps, device=model.DEVICE)
+    vis_prob = torch.zeros(numcases, img_side*img_side, nr_gen_steps, device=model.DEVICE)
+    vis_states = torch.zeros(numcases ,img_side*img_side, nr_gen_steps, device=model.DEVICE)
 
     Energy_matrix = torch.zeros(numcases, nr_gen_steps, device=model.DEVICE)
 
     for step in range(0,nr_gen_steps):
-        
+
         if step>0: #if we are after the 1st gen step...
-            
+
             hid_activation = torch.matmul(vis_states[:,:,step-1], model.vishid) + model.hidbiases # hid_act = V(s-1)*W + bH
-            
+
             # Pass the activation in a sigmoid
             if temperature==1:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
@@ -72,7 +74,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
 
                     #get the indices (idxs) of the smallest (i.e., least probable) units in hid_prob[:,:,step]
                     #Idxs size: numcases x (hidden_layer_size - consider_top_k_units)
-                    vs, idxs = torch.topk(hid_prob[:,:,step], (hidden_layer_size - consider_top_k_units), largest = False) 
+                    vs, idxs = torch.topk(hid_prob[:,:,step], (hidden_layer_size - consider_top_k_units), largest = False)
 
                     b = copy.deepcopy(hid_prob[:,:,step]) # b is a deepcopy of the original hid_prob[:,:,step]
 
@@ -92,7 +94,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
 
 
         vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(model.vishid, 0, 1)) + model.visbiases #V(s) = H(s)*W + bV
-        
+
         #pass the visible activation through the sigmoid to obtain the visible probabilities
         if temperature==1:
             vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
@@ -112,7 +114,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
             Energy_matrix[:,step] = state_energy[:,0]
 
 
-    result_dict = dict(); 
+    result_dict = dict()
     result_dict['hid_states'] = hid_states
     result_dict['vis_states'] = vis_states
     result_dict['Energy_matrix'] = Energy_matrix
