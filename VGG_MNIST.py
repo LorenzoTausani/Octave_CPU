@@ -286,7 +286,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
       Vis_digit = dict_classifier['Cl_pred_matrix'] #i just take all predictions together
     nr_visited_states_list =[] #qui listerò gli stati che vado a visitare
     nr_transitions_list =[] #qui listerò invece il numero di transizioni che farò
-    to_digits_mat = torch.zeros(Vis_digit.size()[0],model.Num_classes+1) #this is a matrix with nr.rows=nr.examples, nr.cols = 10+1 (nr. digits+no digits category)
+    to_digits_mat = torch.zeros(Vis_digit.size()[0],nr_states) #this is a matrix with nr.rows=nr.examples, nr.cols = 10+1 (nr. digits+no digits category)
     
     for nr_ex,example in enumerate(Vis_digit): # example=tensor of the reconstructions category guessed by the classifier in a single example (i.e. row-wise)
       no10_example = example[example!=10] #here are all generations different from nondigit
