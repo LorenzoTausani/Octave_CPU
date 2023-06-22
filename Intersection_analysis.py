@@ -112,7 +112,7 @@ class Intersection_analysis:
 
 
 
-    def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000, plot=0, entropy_correction=1):
+    def generate_chimera_lbl_biasing(self,VGG_cl, elements_of_interest = [8,2],temperature=1, nr_of_examples = 1000, plot=0, entropy_correction=0):
       b_vec =torch.zeros(nr_of_examples,self.model.layersize[0])
       if not(elements_of_interest =='rand'):
         dictionary_key = str(elements_of_interest[0])+','+str(elements_of_interest[1])
@@ -128,7 +128,7 @@ class Intersection_analysis:
       b_vec = torch.unsqueeze(b_vec,2)
       #b_vec = torch.unsqueeze(b_vec,0)
       
-      d= self.model.reconstruct_from_hidden(b_vec, self.nr_steps,temperature=temperature)
+      d= generate_from_hidden(self.model, b_vec, self.nr_steps,temperature=temperature, consider_top_k_units = 5000, include_energy = 0)
       
       d = Classifier_accuracy(d, VGG_cl, self.model, plot=plot, Thresholding_entropy=entropy_correction)
       df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,self.model, Plot=plot, Ian=1)
@@ -137,7 +137,6 @@ class Intersection_analysis:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
       return d, df_average,df_sem, Transition_matrix_rowNorm
-
 
 def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=[], cl_labels=[], lS=20):
     def save_mat_xlsx(my_array, filename='my_res.xlsx'):
