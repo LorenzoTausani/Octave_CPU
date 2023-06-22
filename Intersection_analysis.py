@@ -125,9 +125,10 @@ class Intersection_analysis:
           dictionary_key = str(n1)+','+str(n2)
           b_vec[i,self.result_dict_biasing[dictionary_key].long()]=1
 
-      b_vec = torch.unsqueeze(b_vec,2)
+      #b_vec = torch.unsqueeze(b_vec,2)
       #b_vec = torch.unsqueeze(b_vec,0)
-      
+      b_vec = torch.transpose(b_vec,1,0)
+      print(b_vec.shape)
       d= generate_from_hidden(self.model, b_vec, self.nr_steps,temperature=temperature, consider_top_k_units = 5000, include_energy = 0)
       
       d = Classifier_accuracy(d, VGG_cl, self.model, plot=plot, Thresholding_entropy=entropy_correction)
@@ -137,7 +138,7 @@ class Intersection_analysis:
           Reconstruct_plot(b_vec, self.model, nr_steps=self.nr_steps, d_type='hidden',temperature=temperature)
       
       return d, df_average,df_sem, Transition_matrix_rowNorm
-
+    
 def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,compute_new=1, nr_sample_generated =100, entropy_correction=[], cl_labels=[], lS=20):
     def save_mat_xlsx(my_array, filename='my_res.xlsx'):
         # create a pandas dataframe from the numpy array
