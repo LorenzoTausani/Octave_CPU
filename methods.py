@@ -117,10 +117,6 @@ def compute_inverseW_for_lblBiasing_ZAMBRA(model, input_data, input_data_lbls):
 
 def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, include_energy = 0):
 
-    if isinstance(temperature, list): #if we have a list of temperatures...
-        n_times = math.ceil(nr_gen_steps/len(temperature))
-        temperature = temperature*n_times
-
     img_side = int(np.sqrt(model.vishid.shape[0]))
     #input_hid_prob has size Nr_hidden_units x num_cases. Therefore i transpose it
     input_hid_prob = torch.transpose(input_hid_prob,0,1)
@@ -137,12 +133,13 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, in
 
     Energy_matrix = torch.zeros(numcases, nr_gen_steps, device=model.DEVICE)
 
+
     for step in range(0,nr_gen_steps):
-
+        
         if step>0: #if we are after the 1st gen step...
-
+            
             hid_activation = torch.matmul(vis_states[:,:,step-1], model.vishid) + model.hidbiases # hid_act = V(s-1)*W + bH
-
+            
             # Pass the activation in a sigmoid
             if temperature==1:
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
@@ -152,7 +149,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, in
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
 
             if model.Hidden_mode=='binary': #If the hidden layer is set to be binary...
-              hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
+                hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
             else:
                 hid_states[:,:,step] = hid_prob[:,:,step] #if the hidden layer is set to be continous, avoid the bernoullian sampling
 
@@ -162,7 +159,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, in
 
 
         vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(model.vishid, 0, 1)) + model.visbiases #V(s) = H(s)*W + bV
-
+        
         #pass the visible activation through the sigmoid to obtain the visible probabilities
         if temperature==1:
             vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
@@ -182,7 +179,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, in
             Energy_matrix[:,step] = state_energy[:,0]
 
 
-    result_dict = dict()
+    result_dict = dict(); 
     result_dict['hid_states'] = hid_states
     result_dict['vis_states'] = vis_states
     result_dict['Energy_matrix'] = Energy_matrix
@@ -192,10 +189,11 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, in
 
     return result_dict
 
-def Plot_example_generated(input_dict, model,row_step = 10, dS=20, custom_steps = True, Show_classification = False, not_random_idxs = True):
+def Plot_example_generated(input_dict,row_step = 10, dS=20, custom_steps = True, Show_classification = False, not_random_idxs = True):
     
     Generated_samples=input_dict['vis_states']
     nr_steps = Generated_samples.shape[2]
+    
 
     if Show_classification ==True:
       Classifications = input_dict['Cl_pred_matrix']
