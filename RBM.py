@@ -41,7 +41,6 @@ class RBM():
                 Hidden_mode = 'binary', # alternative:ReLU
                 Visible_mode='continous'): #alternative: binary
 
-        self.nlayers = len(layersize)
         self.layersize = layersize
         self.maxepochs   = maxepochs
         self.batchsize   = batchsize
