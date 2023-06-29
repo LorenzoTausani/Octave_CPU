@@ -26,7 +26,7 @@ class Intersection_analysis:
 
       for cl in range(self.model.Num_classes): #per ogni class
         hid_vec_B = label_biasing(self.model, on_digits =  cl)
-        top_values_biasing, top_idxs_biasing = torch.topk(hid_vec_B, self.top_k_Hidden) #qui e la linea sotto  trovo i top p indici in termini di attività
+        top_values_biasing, top_idxs_biasing = torch.topk(hid_vec_B[:,0], self.top_k_Hidden) #qui e la linea sotto  trovo i top p indici in termini di attività
 
         vettore_indici_allDigits_biasing = torch.cat((vettore_indici_allDigits_biasing,top_idxs_biasing),0) #concateno i top p indici di ciascun i digits in questo vettore
 
