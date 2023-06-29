@@ -13,8 +13,8 @@ def reconstruct(model, input_data, nr_steps, temperature=1, include_energy = 1):
     numcases = input_data.size()[0]
     vector_size = input_data.size()[1]*input_data.size()[2]
     input_data =  input_data.view(len(input_data) , vector_size)
-    hid_prob = torch.zeros(numcases,model.layersize[0],nr_steps).to(model.DEVICE)
-    hid_states = torch.zeros(numcases,model.layersize[0],nr_steps).to(model.DEVICE)
+    hid_prob = torch.zeros(numcases,model.layersize,nr_steps).to(model.DEVICE)
+    hid_states = torch.zeros(numcases,model.layersize,nr_steps).to(model.DEVICE)
 
     vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(model.DEVICE)
     vis_states = torch.zeros(numcases,vector_size, nr_steps).to(model.DEVICE)
