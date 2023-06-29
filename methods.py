@@ -5,7 +5,7 @@ import copy
 import random
 import matplotlib.pyplot as plt
 
-def reconstruct(model, input_data, nr_steps, temperature=1, include_energy = 1):
+def reconstruct(model, input_data, nr_steps, temperature=1, include_energy = 0):
 
     '''
     1 = test, 2 = training
