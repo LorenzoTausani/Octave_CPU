@@ -5,6 +5,69 @@ import copy
 import random
 import matplotlib.pyplot as plt
 
+def reconstruct(model, input_data, nr_steps, temperature=1, include_energy = 1):
+
+    '''
+    1 = test, 2 = training
+    '''
+    numcases = input_data.size()[0]
+    vector_size = input_data.size()[1]*input_data.size()[2]
+    input_data =  input_data.view(len(input_data) , vector_size)
+    hid_prob = torch.zeros(numcases,model.layersize[0],nr_steps).to(model.DEVICE)
+    hid_states = torch.zeros(numcases,model.layersize[0],nr_steps).to(model.DEVICE)
+
+    vis_prob = torch.zeros(numcases,vector_size, nr_steps).to(model.DEVICE)
+    vis_states = torch.zeros(numcases,vector_size, nr_steps).to(model.DEVICE)
+
+    Energy_matrix = torch.zeros(numcases, nr_steps).to(model.DEVICE)
+
+    for step in range(0,nr_steps):
+        
+        if step==0:
+            hid_activation = torch.matmul(input_data,model.vishid) + model.hidbiases
+        else:
+            hid_activation = torch.matmul(vis_states[:,:,step-1],model.vishid) + model.hidbiases
+
+
+        if temperature==1:
+            hid_prob[:,:,step]  = torch.sigmoid(hid_activation)
+        elif isinstance(temperature, list):
+            hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature[step])
+        else:
+            hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
+          
+        if model.Hidden_mode=='binary':
+            hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step])
+        else:
+            hid_states[:,:,step] = hid_prob[:,:,step]
+
+        vis_activation = torch.matmul(hid_states[:,:,step],torch.transpose(model.vishid, 0, 1)) + model.visbiases
+
+        if temperature==1:
+            vis_prob[:,:,step]  = torch.sigmoid(vis_activation)
+        elif isinstance(temperature, list):
+            vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature[step])
+        else:
+            vis_prob[:,:,step]  = torch.sigmoid(vis_activation/temperature)
+
+        if model.Visible_mode=='binary':
+            vis_states[:,:,step] = torch.bernoulli(vis_prob[:,:,step])
+        elif model.Visible_mode=='continous':
+            vis_states[:,:,step] = vis_prob[:,:,step]
+
+        if  include_energy == 1:
+            state_energy = model.energy_f(hid_states[:,:,step], vis_states[:,:,step])
+            Energy_matrix[:,step] = state_energy[:,0]
+
+    result_dict = dict(); 
+    result_dict['hid_states'] = hid_states
+    result_dict['vis_states'] = vis_states
+    result_dict['Energy_matrix'] = Energy_matrix
+    result_dict['hid_prob'] = hid_prob
+    result_dict['vis_prob'] = vis_prob
+
+    return result_dict
+
 
 def label_biasing(model, on_digits=1, topk = 149):
 
@@ -32,7 +95,27 @@ def label_biasing(model, on_digits=1, topk = 149):
 
         return gen_hidden
 
-def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, consider_top_k_units = 1000, include_energy = 0):
+
+def compute_inverseW_for_lblBiasing_ZAMBRA(model, input_data, input_data_lbls):
+    
+    n_cl = model.Num_classes
+    d = reconstruct(model, input_data, nr_steps=1)
+    tr_patterns = torch.squeeze(d['hid_states']) #This array contains the 1st hidden state obtained from the reconstruction of all the MNIST training set (size: nr_MNIST_train_ex x Hidden layer size)
+    #L is a array of size (model.Num_classes x nr_MNIST_train_ex (10 x 60000)). Each column of it is the one-hot encoded label of the i-th MNIST train example
+    L = torch.zeros(n_cl,tr_patterns.shape[0], device = model.DEVICE)
+    c=0
+    for lbl in input_data_lbls:
+        L[lbl,c]=1
+        c=c+1
+
+    #I compute the inverse of the weight matrix of the linear classifier. weights_inv has shape (model.Num_classes x Hidden layer size (10 x 1000))
+    weights_inv = torch.transpose(torch.matmul(torch.transpose(tr_patterns,0,1), torch.linalg.pinv(L)), 0, 1)
+
+    model.weights_inv = weights_inv
+
+    return weights_inv
+
+def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, include_energy = 0):
 
     if isinstance(temperature, list): #if we have a list of temperatures...
         n_times = math.ceil(nr_gen_steps/len(temperature))
@@ -69,22 +152,7 @@ def generate_from_hidden(model, input_hid_prob , nr_gen_steps, temperature=1, co
                 hid_prob[:,:,step]  = torch.sigmoid(hid_activation/temperature)
 
             if model.Hidden_mode=='binary': #If the hidden layer is set to be binary...
-
-                if consider_top_k_units < hidden_layer_size: #if we want to consider just the top k units in the hidden layer...
-
-                    #get the indices (idxs) of the smallest (i.e., least probable) units in hid_prob[:,:,step]
-                    #Idxs size: numcases x (hidden_layer_size - consider_top_k_units)
-                    vs, idxs = torch.topk(hid_prob[:,:,step], (hidden_layer_size - consider_top_k_units), largest = False)
-
-                    b = copy.deepcopy(hid_prob[:,:,step]) # b is a deepcopy of the original hid_prob[:,:,step]
-
-
-                    for row in range(numcases): # for every sample of b...
-                        b[row, idxs[row,:]]=0 #set the indices of the smallest (hidden_layer_size - consider_top_k_units) units to 0
-
-                    hid_states[:,:,step] = torch.bernoulli(b) #do the bernoullian sampling
-                else:
-                    hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
+              hid_states[:,:,step] = torch.bernoulli(hid_prob[:,:,step]) #do the bernoullian sampling
             else:
                 hid_states[:,:,step] = hid_prob[:,:,step] #if the hidden layer is set to be continous, avoid the bernoullian sampling
 
