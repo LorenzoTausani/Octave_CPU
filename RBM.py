@@ -100,12 +100,25 @@ class RBM():
         #START POSITIVE PHASE
         H_act = torch.matmul(data_mb,self.vishid)
         H_act = torch.add(H_act, self.hidbiases) #W.x + c
-        poshidprobs = torch.sigmoid(H_act)
+        if self.Hidden_mode == 'binary':
+            poshidprobs = torch.sigmoid(H_act)
+        else:
+            poshidprobs = H_act
         posprods     = torch.matmul(torch.transpose(data_mb, 0, 1), poshidprobs)
         poshidact    = torch.sum(poshidprobs,0)
         posvisact    = torch.sum(data_mb,0)
         #END OF POSITIVE PHASE
-        poshidstates = torch.bernoulli(poshidprobs)
+        if self.Hidden_mode == 'binary':
+            poshidstates = torch.bernoulli(poshidprobs)
+        elif self.Hidden_mode == 'gaussian':
+            noise = torch.randn(poshidprobs.shape,device='cuda')
+            poshidstates = poshidprobs+noise
+        elif self.Hidden_mode == 'ReLU':
+            noise = torch.randn(poshidprobs.shape,device='cuda')
+            poshidstates = relu(poshidprobs+noise)
+        elif self.Hidden_mode == 'NReLU':
+            noise = torch.randn(poshidprobs.shape,device='cuda')*torch.sigmoid(poshidprobs)
+            poshidstates = relu(poshidprobs+noise)
 
         #START NEGATIVE PHASE
         N_act = torch.matmul(poshidstates,torch.transpose(self.vishid, 0, 1))
@@ -113,7 +126,10 @@ class RBM():
         negdata = torch.sigmoid(N_act)
         N2_act = torch.matmul(negdata,self.vishid)
         N2_act = torch.add(N2_act, self.hidbiases) #W.x + c
-        neghidprobs = torch.sigmoid(N2_act)
+        if self.Hidden_mode == 'binary':
+            neghidprobs = torch.sigmoid(N2_act)
+        else:
+            neghidprobs = N2_act
         negprods    = torch.matmul(torch.transpose(negdata, 0, 1), neghidprobs)
         neghidact   = torch.sum(neghidprobs,0)
         negvisact   = torch.sum(negdata,0)
@@ -151,27 +167,12 @@ class RBM():
 
     def save_model(self):
         #lavora con drive
+        V = 'V'+self.Visible_mode[0]
+        H = 'H'+self.Hidden_mode[0]
+        if self.Hidden_mode == 'NReLU':
+            H=H+self.Hidden_mode[1]
 
-        try:
-            h_test_size = self.TEST_gen_hid_states.shape[0]
-            nr_steps = self.TEST_gen_hid_states.shape[2]
-        except:
-            h_test_size = 0
-            nr_steps = 0
-
-        try:
-            h_train_size = self.TRAIN_gen_hid_states.shape[0]
-        except:
-            h_train_size = 0
-
-        if self.Visible_mode=='binary':
-           V = 'Vbinary'
-        elif self.Visible_mode=='continous':
-           V = 'Vcontinous'
-        else:
-           V = 'VleakyBinary'
-
-        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)+V
+        self.filename = 'OctaveCPU_RBM'+ str(self.maxepochs)+'_'+V+H+'_nr_steps'+str(self.maxepochs)
 
         object = self
  

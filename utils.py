@@ -52,45 +52,28 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
 
   if Load_yn==1:
     nr_train_epochs_done=int(input('quante epoche di training della RBM?'))
-    vis_is_binary = input('Che tipo di visibile? (continous,binary,leaky_binary)')
+    vis_act_type = input('Che tipo di visibile? (continous,binary)')
+    hid_act_type = input('Che tipo di hidden? (binary, gaussian, ReLU, NReLU)')
 
-    if vis_is_binary=='binary':
-      V = 'Vbinary'
-    elif vis_is_binary=='continous':
-      V = 'Vcontinous'
-    else:
-      V = 'VleakyBinary'
-
-    #h_train_size = int(input('quanti h train generati (0 se nessuno)?'))
-    #h_test_size = int(input('quanti h test generati (0 se nessuno)?'))
-    #nr_steps = int(input('con quanti step di ricostruzione?'))
-
-    h_train_size = len(train_labels)
-    h_test_size = len(sample_test_labels)
+    V = 'V'+vis_act_type[0]
+    H = 'H'+hid_act_type[0]
+    if hid_act_type == 'NReLU':
+      H=H+hid_act_type[1]
     nr_steps = 100
 
-    filename = 'OctaveCPU_RBM'+ str(nr_train_epochs_done)+'_generated_h_train'+str(h_train_size)+'_generated_h_test'+str(h_test_size)+'nr_steps'+str(nr_steps)+V
+    filename = 'OctaveCPU_RBM'+ str(nr_train_epochs_done)+'_'+V+H+'_nr_steps'+str(nr_steps)
 
     model = load_model(filename)
     model.compute_inverseW_for_lblBiasing() #PROVVISORIA. Computo Weights_inv ogni volta perchè non voglio allenare il modello da capo. Però in futuro, quando il modello sarà riallenato, va tolta questa linea
 
   else:
     num_epochs = int(input('trainare la rete? quante epoche? (0 se non si vuole trainare'))
-    vis_is_binary = input('Che tipo di visibile? (continous,binary,leaky_binary)')
+    vis_act_type = input('Che tipo di visibile? (continous,binary)')
+    hid_act_type = input('Che tipo di hidden? (binary, gaussian, ReLU, NReLU)')
     
-    model = DBN(maxepochs   = num_epochs ,device=DEVICE, Visible_mode = vis_is_binary)    
+    model = DBN(maxepochs= num_epochs ,device=DEVICE, Visible_mode = vis_act_type, Hidden_mode=hid_act_type)    
     model.train(train_data,train_labels)
     model.compute_inverseW_for_lblBiasing()
-
-  dati_generati_yn = int(input('creare nuovi dati generati (0=no, 1=train, 2=test, 3= entrambi)'))
-
-  if dati_generati_yn ==1 or dati_generati_yn ==3:
-    nr_steps = 1
-    model.reconstruct(train_data,nr_steps,new_test1_train2_set = 2,lbl_train=train_labels, include_energy =0)
-
-  if dati_generati_yn ==2 or dati_generati_yn ==3:
-    nr_steps = 100
-    model.reconstruct(sample_test_data,nr_steps,new_test1_train2_set = 1,lbl_test=sample_test_labels)
 
   if not(hasattr(model, 'Cl_TEST_step_accuracy')):
     model.stepwise_Cl_accuracy()
@@ -100,7 +83,7 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
   if save_yn ==1:
     model.save_model()
 
-  return model  
+  return model
 
 def load_model(filename):
 
