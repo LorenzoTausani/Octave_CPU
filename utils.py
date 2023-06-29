@@ -6,7 +6,7 @@ import pickle
 import os
 import numpy as np
 import math
-from DBN import DBN
+from RBM import RBM
 from google.colab import files
 
 def load_MNIST_data(DEVICE):
@@ -71,7 +71,7 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
     vis_act_type = input('Che tipo di visibile? (continous,binary)')
     hid_act_type = input('Che tipo di hidden? (binary, gaussian, ReLU, NReLU)')
     
-    model = DBN(maxepochs= num_epochs ,device=DEVICE, Visible_mode = vis_act_type, Hidden_mode=hid_act_type)    
+    model = RBM(maxepochs= num_epochs ,device=DEVICE, Visible_mode = vis_act_type, Hidden_mode=hid_act_type)    
     model.train(train_data,train_labels)
     model.compute_inverseW_for_lblBiasing()
 

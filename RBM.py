@@ -14,6 +14,13 @@ il codice implementa bene una RBM monostrato. Va fatto lavoro
 per implementare una DBN multistrato. Il nome della attuale classe 
 è perciò fuorviante
 '''
+def relu(x, upper_bound = 0):
+    r = torch.maximum(torch.zeros_like(x), x)
+    if upper_bound>0:
+        tetto = torch.zeros_like(x)+upper_bound
+        r = torch.minimum(tetto, r)
+    print('min:' +str(torch.min(torch.flatten(r))),'max:' +str(torch.max(torch.flatten(r))))
+    return r
 
 
 class RBM():
