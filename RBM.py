@@ -19,7 +19,7 @@ def relu(x, upper_bound = 0):
     if upper_bound>0:
         tetto = torch.zeros_like(x)+upper_bound
         r = torch.minimum(tetto, r)
-    print('min:' +str(torch.min(torch.flatten(r))),'max:' +str(torch.max(torch.flatten(r))))
+    #print('min:' +str(torch.min(torch.flatten(r))),'max:' +str(torch.max(torch.flatten(r))))
     return r
 
 
@@ -46,6 +46,10 @@ class RBM():
         self.batchsize   = batchsize
         self.sparsity       = sparsity
         self.spars_factor   = spars_factor
+        if Hidden_mode=='binary':
+            self.epsilonw       = epsilonw
+        else:
+            self.epsilonw       = 0.0075
         self.epsilonw       = epsilonw
         self.epsilonvb      = epsilonvb
         self.epsilonhb      = epsilonhb

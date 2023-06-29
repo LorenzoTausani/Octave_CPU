@@ -7,6 +7,7 @@ import os
 import numpy as np
 import math
 from RBM import RBM
+from methods import compute_inverseW_for_lblBiasing
 from google.colab import files
 
 def load_MNIST_data(DEVICE):
@@ -46,7 +47,7 @@ def load_MNIST_data(DEVICE):
     return train_data, train_labels, sample_test_data, sample_test_labels
 
 
-def model_load_or_create(train_data, train_labels, sample_test_data, sample_test_labels, DEVICE):
+def model_load_or_create(train_data, train_labels, DEVICE):
   #Funzione per loaddare o creare un modello RBM
   Load_yn=int(input('do you want to load an old model? (1=yes, 0=no)'))
 
@@ -73,10 +74,7 @@ def model_load_or_create(train_data, train_labels, sample_test_data, sample_test
     
     model = RBM(maxepochs= num_epochs ,device=DEVICE, Visible_mode = vis_act_type, Hidden_mode=hid_act_type)    
     model.train(train_data,train_labels)
-    model.compute_inverseW_for_lblBiasing()
-
-  if not(hasattr(model, 'Cl_TEST_step_accuracy')):
-    model.stepwise_Cl_accuracy()
+    compute_inverseW_for_lblBiasing(model, train_data, train_labels)
 
   save_yn = int(input('salvare il modello? (0=no, 1=si)'))
 

@@ -96,7 +96,7 @@ def label_biasing(model, on_digits=1, topk = 149):
         return gen_hidden
 
 
-def compute_inverseW_for_lblBiasing_ZAMBRA(model, input_data, input_data_lbls):
+def compute_inverseW_for_lblBiasing(model, input_data, input_data_lbls):
     
     n_cl = model.Num_classes
     d = reconstruct(model, input_data, nr_steps=1)
@@ -193,7 +193,7 @@ def Plot_example_generated(input_dict,row_step = 10, dS=20, custom_steps = True,
     
     Generated_samples=input_dict['vis_states']
     nr_steps = Generated_samples.shape[2]
-    
+
 
     if Show_classification ==True:
       Classifications = input_dict['Cl_pred_matrix']
