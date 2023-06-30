@@ -88,7 +88,7 @@ class Intersection_analysis:
       #b_vec = torch.unsqueeze(b_vec,0)
       b_vec = torch.transpose(b_vec,1,0)
       print(b_vec.shape)
-      d= generate_from_hidden(self.model, b_vec, self.nr_steps,temperature=temperature, consider_top_k_units = 5000, include_energy = 0)
+      d= generate_from_hidden(self.model, b_vec, self.nr_steps,temperature=temperature, include_energy = 0)
       
       d = Classifier_accuracy(d, VGG_cl, self.model, plot=plot, Thresholding_entropy=entropy_correction)
       df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,self.model, Plot=plot, Ian=1)
@@ -143,7 +143,7 @@ def Chimeras_nr_visited_states(model, VGG_cl, Ian =[], topk=149, apprx=1,plot=1,
         for idx, combination in enumerate(combinations_of_two):
           gen_hidden = label_biasing(model, on_digits=  list(combination), topk = topk)
           gen_hidden_rep = gen_hidden.repeat(1,nr_sample_generated)
-          d = generate_from_hidden(model, gen_hidden_rep , nr_gen_steps=100, temperature=1, consider_top_k_units = gen_hidden_rep.size()[0], include_energy = 0)
+          d = generate_from_hidden(model, gen_hidden_rep , nr_gen_steps=100, temperature=1, include_energy = 0)
           #d = Classifier_accuracy(d, VGG_cl,model, Thresholding_entropy=entropy_correction, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
           d = Classifier_accuracy(d, VGG_cl,model, labels=[], Batch_sz= 100, plot=0, dS=30, l_sz=3)
           df_average,df_sem, Transition_matrix_rowNorm = classification_metrics(d,model,Plot=0,dS=50,Ian=1)
