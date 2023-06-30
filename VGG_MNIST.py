@@ -352,7 +352,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
           Trans_nr_err = Trans_nr_err.round(rounding)
           Trans_nr_err = np.array(Trans_nr_err)
 
-          StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=lS)
+          StateTimePlot(Trans_nr, T_mat_labels, lS=lS)
 
           #plot of the transition matrix
           Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels, lS=lS)
@@ -387,7 +387,7 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
   return df_average, df_sem, Transition_matrix_rowNorm
 
 
-def StateTimePlot(Trans_nr, Trans_nr_err, T_mat_labels, rounding=1, lS=25):
+def StateTimePlot(Trans_nr, T_mat_labels, lS=25):
 
 
         plt.figure(figsize=(15, 15))
