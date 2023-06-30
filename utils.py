@@ -65,7 +65,8 @@ def model_load_or_create(train_data, train_labels, DEVICE):
     filename = 'OctaveCPU_RBM'+ str(nr_train_epochs_done)+'_'+V+H+'_nr_steps'+str(nr_steps)
 
     model = load_model(filename)
-    model.compute_inverseW_for_lblBiasing() #PROVVISORIA. Computo Weights_inv ogni volta perchè non voglio allenare il modello da capo. Però in futuro, quando il modello sarà riallenato, va tolta questa linea
+    if not(hasattr(model, 'weights_inv')):
+        compute_inverseW_for_lblBiasing(model, train_data, train_labels)
 
   else:
     num_epochs = int(input('trainare la rete? quante epoche? (0 se non si vuole trainare'))
