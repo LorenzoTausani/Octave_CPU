@@ -386,20 +386,15 @@ def classification_metrics(dict_classifier,model,test_labels=[], Plot=1, dS = 30
 
   return df_average, df_sem, Transition_matrix_rowNorm
 
-
 def StateTimePlot(Trans_nr, T_mat_labels, lS=25):
-
-
         plt.figure(figsize=(15, 15))
         ax = sns.heatmap(Trans_nr, linewidth=0.5, annot=True, annot_kws={"size": lS}, square=True, cbar_kws={"shrink": .82},fmt='.1f', cmap='jet')
         if T_mat_labels==[]:
            T_mat_labels = [str(i) for i in range(len(Trans_nr))]
-           if len(Trans_nr) == 11:
+           ax.set_yticklabels(T_mat_labels)
+           if len(Trans_nr) == 10:
               T_mat_labels.append('Non\ndigit')
-
         ax.set_xticklabels(T_mat_labels)
-        if not(len(Trans_nr) == 11):
-          ax.set_yticklabels(T_mat_labels)
         ax.tick_params(axis='both', labelsize=lS)
 
         plt.xlabel('Class', fontsize = 25) # x-axis label with fontsize 15
@@ -416,7 +411,7 @@ def Transition_mat_plot(Transition_matrix_rowNorm,T_mat_labels=[], lS=25):
       plt.xlabel('To', fontsize = 25) # x-axis label with fontsize 15
       plt.ylabel('From', fontsize = 25) # y-axis label with fontsize 15
       if T_mat_labels==[]:
-          T_mat_labels = [str(i) for i in range(len(Transition_matrix_rowNorm))]
+          T_mat_labels = [str(i) for i in range(len(Transition_matrix_rowNorm)-1)]
           if len(Transition_matrix_rowNorm) == 11:
             T_mat_labels.append('Non\ndigit')
       ax.set_xticklabels(T_mat_labels)
