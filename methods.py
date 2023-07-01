@@ -194,6 +194,8 @@ def Plot_example_generated(input_dict,row_step = 10, dS=20, custom_steps = True,
     Generated_samples=input_dict['vis_states']
     nr_steps = Generated_samples.shape[2]
 
+    img_side = int(np.sqrt(Generated_samples.shape[1]))
+
 
     if Show_classification ==True:
       Classifications = input_dict['Cl_pred_matrix']
@@ -229,7 +231,7 @@ def Plot_example_generated(input_dict,row_step = 10, dS=20, custom_steps = True,
         # plotto la ricostruzione dopo uno step
 
         reconstructed_img= Generated_samples[sample_idx,:,0] #estraggo la prima immagine ricostruita per il particolare esempio (lbl può essere un nome un po fuorviante)
-        reconstructed_img = reconstructed_img.view((28,28)).cpu() #ridimensiono l'immagine e muovo su CPU
+        reconstructed_img = reconstructed_img.view((img_side,img_side)).cpu() #ridimensiono l'immagine e muovo su CPU
         axis[0, c].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
         axis[0, c].imshow(reconstructed_img , cmap = 'gray')
@@ -249,7 +251,7 @@ def Plot_example_generated(input_dict,row_step = 10, dS=20, custom_steps = True,
             #plotto la ricostruzione
 
             reconstructed_img= Generated_samples[sample_idx,:,step-1] #step-1 perchè 0 è la prima ricostruzione
-            reconstructed_img = reconstructed_img.view((28,28)).cpu()
+            reconstructed_img = reconstructed_img.view((img_side,img_side)).cpu()
             axis[idx, c].tick_params(left = False, right = False , labelleft = False ,
             labelbottom = False, bottom = False)
             axis[idx, c].imshow(reconstructed_img , cmap = 'gray')

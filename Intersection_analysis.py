@@ -87,7 +87,7 @@ class Intersection_analysis:
       #b_vec = torch.unsqueeze(b_vec,2)
       #b_vec = torch.unsqueeze(b_vec,0)
       b_vec = torch.transpose(b_vec,1,0)
-      print(b_vec.shape)
+      #print(b_vec.shape)
       d= generate_from_hidden(self.model, b_vec, self.nr_steps,temperature=temperature, include_energy = 0)
       
       d = Classifier_accuracy(d, VGG_cl, self.model, plot=plot, Thresholding_entropy=entropy_correction)

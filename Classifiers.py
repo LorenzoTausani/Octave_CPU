@@ -5,6 +5,8 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
+import torchvision.models as models
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -89,6 +91,76 @@ class VGG16(nn.Module):
     x = self.classifier(x)
 
     return x
+  
+def CelebA_ResNet_classifier(energy_based_model, ds_loaders = [], num_epochs = 20, learning_rate = 0.001, loadpath=''):
+    classifier = models.resnet18(pretrained=True)
+    num_classes = energy_based_model.Num_classes
+    classifier.fc = nn.Linear(classifier.fc.in_features, num_classes)
+    if ds_loaders == []: #load old model
+        classifier.load_state_dict(torch.load(loadpath)) #DA FARE: AUTOMATIZZA IL LOADPATH
+        classifier = classifier.to('cuda')
+    else:
+        # Definizione del dataloader
+        train_loader = ds_loaders[0]
+        val_loader = ds_loaders[1]
+        # Sblocco di tutti i parametri del modello per il fine-tuning
+        for param in classifier.parameters():
+            param.requires_grad = True
+
+        # Definizione della loss function e dell'ottimizzatore.
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(classifier.parameters(), lr=learning_rate)
+
+        # Spostamento del modello e della loss function sulla GPU, se disponibile
+        classifier = classifier.to('cuda')
+        criterion = criterion.to('cuda')
+        # Ciclo di training
+        for epoch in range(num_epochs):
+            train_loss = 0.0
+            val_loss = 0.0
+            correct = 0
+            total = 0
+
+            # Training
+            classifier.train()
+            for images, labels in train_loader:
+                images = images.to('cuda')
+                labels = labels.to('cuda')
+                labels = labels.to(torch.long)  # Convert labels to long data type
+                optimizer.zero_grad()
+                outputs = classifier(images)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                train_loss += loss.item() * images.size(0)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            train_loss = train_loss / len(train_loader.dataset)
+            train_acc = correct / total
+
+            # Validation
+            classifier.eval()
+            with torch.no_grad():
+                for images, labels in val_loader:
+                    images = images.to('cuda')
+                    labels = labels.to('cuda')
+                    labels = labels.to(torch.long)  # Convert labels to long data type
+                    outputs = classifier(images)
+                    loss = criterion(outputs, labels)
+                    val_loss += loss.item() * images.size(0)
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+                val_loss = val_loss / len(val_loader.dataset)
+                val_acc = correct / total
+
+            # Stampa dei risultati dell'epoch
+            print('Epoch [{}/{}], Train Loss: {:.4f}, Train Acc: {:.4f}, Val Loss: {:.4f}, Val Acc: {:.4f}'
+                .format(epoch+1, num_epochs, train_loss, train_acc, val_loss, val_acc))
+            
+    return classifier
+
 
   
 def Classifier_accuracy(input_dict, classifier,model, Thresholding_entropy=[], labels=[], cl_lbls =[], Batch_sz= 100, plot=1, dS=30, l_sz=3):
