@@ -13,8 +13,8 @@ import scipy
 import seaborn as sns
 from google.colab import files
 
-from VGG_MNIST import Classifier_accuracy
-from VGG_MNIST import classification_metrics
+from Classifiers import Classifier_accuracy
+from Classifiers import classification_metrics
 
 def Digitwise_metrics_plot(model,sample_test_labels, sample_test_data,gen_data_dictionary=[], metric_type='cos', dS = 50, l_sz = 5, new_generated_data=False, generated_data=[], temperature=1):
     '''
