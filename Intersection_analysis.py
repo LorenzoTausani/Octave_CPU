@@ -1,9 +1,9 @@
 import torch
 import random
-import VGG_MNIST
+import Classifiers #era VGG MNIST
 import plotting_functions
 import methods
-from VGG_MNIST import *
+from Classifiers import * 
 from plotting_functions import *
 from methods import *
 from google.colab import files
